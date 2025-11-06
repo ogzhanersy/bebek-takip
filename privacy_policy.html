@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baby Tracker - Gizlilik Politikası</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 3px solid #667eea;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section h2::before {
+            content: "🔒";
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        
+        .section h3 {
+            color: #555;
+            font-size: 1.2em;
+            margin: 15px 0 10px 0;
+        }
+        
+        .section ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .section li {
+            margin-bottom: 8px;
+            color: #666;
+        }
+        
+        .section p {
+            margin-bottom: 15px;
+            color: #666;
+        }
+        
+        .highlight {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+            margin: 15px 0;
+        }
+        
+        .contact-info {
+            background: #f0f8ff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #667eea;
+            margin: 20px 0;
+        }
+        
+        .contact-info h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .contact-info p {
+            margin-bottom: 10px;
+            color: #555;
+        }
+        
+        .github-link {
+            display: inline-block;
+            background: #24292e;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 25px;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .github-link:hover {
+            background: #0366d6;
+            transform: translateY(-2px);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 30px 0;
+            border-top: 2px solid #667eea;
+            margin-top: 30px;
+            color: #666;
+        }
+        
+        .footer p {
+            margin-bottom: 10px;
+        }
+        
+        .version {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            display: inline-block;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍼 Baby Tracker</h1>
+            <p>Gizlilik Politikası</p>
+            <p><strong>Son Güncelleme:</strong> 15 Aralık 2024</p>
+        </div>
+
+        <div class="section">
+            <h2>1. Giriş</h2>
+            <p>Bu gizlilik politikası, Baby Tracker uygulamasının ("Uygulama") kişisel verilerinizi nasıl topladığını, kullandığını ve koruduğunu açıklar. Uygulamayı kullanarak bu politikayı kabul etmiş olursunuz.</p>
+        </div>
+
+        <div class="section">
+            <h2>2. Toplanan Bilgiler</h2>
+            
+            <h3>2.1 Hesap Bilgileri</h3>
+            <ul>
+                <li><strong>E-posta adresi:</strong> Hesap oluşturma ve giriş için</li>
+                <li><strong>Telefon numarası:</strong> İletişim ve güvenlik için (isteğe bağlı)</li>
+                <li><strong>Kullanıcı adı:</strong> Profil tanımlama için</li>
+            </ul>
+
+            <h3>2.2 Bebek Bilgileri</h3>
+            <ul>
+                <li><strong>Bebek adı:</strong> Kişiselleştirme için</li>
+                <li><strong>Doğum tarihi:</strong> Yaş hesaplama için</li>
+                <li><strong>Cinsiyet:</strong> İstatistikler için</li>
+                <li><strong>Fotoğraf:</strong> Profil resmi için (isteğe bağlı)</li>
+            </ul>
+
+            <h3>2.3 Aktivite Verileri</h3>
+            <ul>
+                <li><strong>Beslenme kayıtları:</strong> Zaman, miktar, tür</li>
+                <li><strong>Uyku kayıtları:</strong> Başlangıç, bitiş zamanları</li>
+                <li><strong>Bez değişim kayıtları:</strong> Zaman, tür</li>
+                <li><strong>Aşı kayıtları:</strong> Tarih, aşı türü</li>
+                <li><strong>Fiziksel ölçümler:</strong> Boy, kilo, baş çevresi</li>
+                <li><strong>Anılar:</strong> Fotoğraflar, notlar, tarihler</li>
+            </ul>
+
+            <h3>2.4 Teknik Veriler</h3>
+            <ul>
+                <li><strong>Cihaz bilgileri:</strong> Model, işletim sistemi</li>
+                <li><strong>Uygulama kullanımı:</strong> Özellik kullanım istatistikleri</li>
+                <li><strong>Hata raporları:</strong> Uygulama performansı için</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>3. Veri Kullanımı</h2>
+            
+            <h3>3.1 Amaçlar</h3>
+            <ul>
+                <li><strong>Hizmet sağlama:</strong> Bebek takibi özelliklerini sunma</li>
+                <li><strong>Kişiselleştirme:</strong> Kullanıcı deneyimini iyileştirme</li>
+                <li><strong>İstatistikler:</strong> Grafik ve raporlar oluşturma</li>
+                <li><strong>Güvenlik:</strong> Hesap güvenliğini sağlama</li>
+                <li><strong>İletişim:</strong> Önemli güncellemeler gönderme</li>
+            </ul>
+
+            <h3>3.2 Yasal Dayanak</h3>
+            <ul>
+                <li><strong>Sözleşme:</strong> Hizmet şartlarının yerine getirilmesi</li>
+                <li><strong>Rıza:</strong> Açık kullanıcı onayı</li>
+                <li><strong>Yasal yükümlülük:</strong> Yasal gereklilikler</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>4. Veri Paylaşımı</h2>
+            
+            <h3>4.1 Üçüncü Taraflar</h3>
+            <ul>
+                <li><strong>Supabase:</strong> Veri depolama ve işleme</li>
+                <li><strong>Google Services:</strong> Firebase, Analytics</li>
+                <li><strong>Cloudflare:</strong> CDN ve güvenlik</li>
+            </ul>
+
+            <h3>4.2 Paylaşım Koşulları</h3>
+            <ul>
+                <li><strong>Yasal gereklilik:</strong> Mahkeme kararı, yasal zorunluluk</li>
+                <li><strong>Güvenlik:</strong> Güvenlik ihlali durumunda</li>
+                <li><strong>İş ortaklığı:</strong> Hizmet sağlayıcıları (sınırlı erişim)</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>5. Veri Güvenliği</h2>
+            
+            <h3>5.1 Güvenlik Önlemleri</h3>
+            <ul>
+                <li><strong>Şifreleme:</strong> Veriler şifrelenmiş olarak saklanır</li>
+                <li><strong>Erişim kontrolü:</strong> Sadece yetkili personel erişebilir</li>
+                <li><strong>Düzenli güvenlik güncellemeleri:</strong> Sistem güvenliği</li>
+                <li><strong>Yedekleme:</strong> Veri kaybını önleme</li>
+            </ul>
+
+            <h3>5.2 Veri Saklama</h3>
+            <ul>
+                <li><strong>Aktif kullanım:</strong> Hesap aktif olduğu sürece</li>
+                <li><strong>Silme:</strong> Hesap silindiğinde 30 gün içinde</li>
+                <li><strong>Yasal gereklilik:</strong> Yasal saklama süreleri</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>6. Kullanıcı Hakları</h2>
+            
+            <h3>6.1 GDPR Hakları</h3>
+            <ul>
+                <li><strong>Erişim hakkı:</strong> Verilerinize erişim</li>
+                <li><strong>Düzeltme hakkı:</strong> Yanlış verileri düzeltme</li>
+                <li><strong>Silme hakkı:</strong> Verilerinizi silme</li>
+                <li><strong>Taşınabilirlik:</strong> Verilerinizi başka platforma taşıma</li>
+                <li><strong>İtiraz hakkı:</strong> Veri işlemeye itiraz etme</li>
+            </ul>
+
+            <h3>6.2 Hak Kullanımı</h3>
+            <ul>
+                <li><strong>İletişim:</strong> privacy@babytracker.com</li>
+                <li><strong>Süre:</strong> 30 gün içinde yanıt</li>
+                <li><strong>Kimlik doğrulama:</strong> Güvenlik için kimlik kontrolü</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>7. Çocukların Gizliliği</h2>
+            
+            <h3>7.1 Yaş Sınırı</h3>
+            <ul>
+                <li><strong>Minimum yaş:</strong> 13 yaş</li>
+                <li><strong>Ebeveyn onayı:</strong> 13-18 yaş arası için gerekli</li>
+                <li><strong>Özel koruma:</strong> Çocuk verileri için ek güvenlik</li>
+            </ul>
+
+            <h3>7.2 Ebeveyn Kontrolü</h3>
+            <ul>
+                <li><strong>Hesap yönetimi:</strong> Ebeveynler hesabı yönetebilir</li>
+                <li><strong>Veri silme:</strong> İstedikleri zaman silebilir</li>
+                <li><strong>İletişim:</strong> Ebeveynlerle doğrudan iletişim</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>8. Çerezler ve Takip</h2>
+            
+            <h3>8.1 Çerez Türleri</h3>
+            <ul>
+                <li><strong>Gerekli çerezler:</strong> Uygulama işlevselliği için</li>
+                <li><strong>Analitik çerezler:</strong> Kullanım istatistikleri için</li>
+                <li><strong>Tercih çerezleri:</strong> Kullanıcı ayarları için</li>
+            </ul>
+
+            <h3>8.2 Çerez Yönetimi</h3>
+            <ul>
+                <li><strong>Ayarlar:</strong> Uygulama ayarlarından kontrol</li>
+                <li><strong>Devre dışı bırakma:</strong> İstediğiniz zaman kapatabilirsiniz</li>
+                <li><strong>Etki:</strong> Bazı özellikler çalışmayabilir</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>9. Uluslararası Veri Transferi</h2>
+            
+            <h3>9.1 Transfer Yerleri</h3>
+            <ul>
+                <li><strong>ABD:</strong> Supabase, Google Services</li>
+                <li><strong>Avrupa:</strong> GDPR uyumlu veri merkezleri</li>
+                <li><strong>Türkiye:</strong> Yerel veri merkezleri</li>
+            </ul>
+
+            <h3>9.2 Koruma Önlemleri</h3>
+            <ul>
+                <li><strong>Sözleşmeler:</strong> Standart sözleşme maddeleri</li>
+                <li><strong>Şifreleme:</strong> Transfer sırasında şifreleme</li>
+                <li><strong>Denetim:</strong> Düzenli güvenlik denetimleri</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>10. Politika Değişiklikleri</h2>
+            
+            <h3>10.1 Güncellemeler</h3>
+            <ul>
+                <li><strong>Bildirim:</strong> Önemli değişiklikler için e-posta</li>
+                <li><strong>Uygulama:</strong> Uygulama içi bildirim</li>
+                <li><strong>Web sitesi:</strong> Güncel politika web sitesinde</li>
+            </ul>
+
+            <h3>10.2 Kabul</h3>
+            <ul>
+                <li><strong>Devam eden kullanım:</strong> Değişiklikleri kabul etme</li>
+                <li><strong>İtiraz:</strong> Hesap silme hakkı</li>
+                <li><strong>Geri çekme:</strong> Rızanızı geri çekme hakkı</li>
+            </ul>
+        </div>
+
+        <div class="contact-info">
+            <h3>📞 İletişim</h3>
+            <p><strong>Gizlilik Sorumlusu:</strong> privacy@babytracker.com</p>
+            <p><strong>Veri Koruma Yetkilisi:</strong> dpo@babytracker.com</p>
+            <p><strong>Genel İletişim:</strong> info@babytracker.com</p>
+            <p><strong>Yanıt Süresi:</strong> 30 gün içinde</p>
+        </div>
+
+        <div class="section">
+            <h2>11. Yasal Bilgiler</h2>
+            
+            <h3>11.1 Uygulanan Yasalara</h3>
+            <ul>
+                <li><strong>GDPR:</strong> Avrupa Birliği Veri Koruma Yönetmeliği</li>
+                <li><strong>KVKK:</strong> Kişisel Verilerin Korunması Kanunu</li>
+                <li><strong>COPPA:</strong> Çocukların Çevrimiçi Gizlilik Koruma Yasası</li>
+            </ul>
+
+            <h3>11.2 Yasal Temsil</h3>
+            <ul>
+                <li><strong>Mahkeme:</strong> [Mahkeme Adı]</li>
+                <li><strong>Hukuk:</strong> Türk Hukuku</li>
+                <li><strong>Dil:</strong> Türkçe</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>12. GitHub ve Açık Kaynak</h2>
+            
+            <h3>12.1 Açık Kaynak Bileşenler</h3>
+            <p>Bu uygulama aşağıdaki açık kaynak projeleri kullanmaktadır:</p>
+            <ul>
+                <li><strong>Flutter:</strong> https://github.com/flutter/flutter</li>
+                <li><strong>Supabase:</strong> https://github.com/supabase/supabase</li>
+                <li><strong>Diğer bağımlılıklar:</strong> pubspec.yaml dosyasında listelenmiştir</li>
+            </ul>
+
+            <h3>12.2 Lisanslar</h3>
+            <ul>
+                <li><strong>MIT License:</strong> Çoğu açık kaynak bileşen</li>
+                <li><strong>Apache 2.0:</strong> Bazı Google servisleri</li>
+                <li><strong>Detaylar:</strong> Uygulama içinde "Lisanslar" bölümünde</li>
+            </ul>
+
+            <div class="highlight">
+                <p><strong>🔗 GitHub Repository:</strong></p>
+                <a href="https://github.com/[kullanici-adi]/baby_tracker_flutter" class="github-link">
+                    📱 Baby Tracker Flutter Repository
+                </a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>13. Son Hükümler</h2>
+            
+            <h3>13.1 Geçerlilik</h3>
+            <p>Bu gizlilik politikası 15 Aralık 2024 tarihinden itibaren geçerlidir.</p>
+
+            <h3>13.2 Bölünebilirlik</h3>
+            <p>Bu politikanın herhangi bir maddesi geçersiz sayılırsa, diğer maddeler geçerliliğini korur.</p>
+
+            <h3>13.3 Tam Anlaşma</h3>
+            <p>Bu politika, gizlilik konusundaki tam anlaşmayı oluşturur.</p>
+        </div>
+
+        <div class="footer">
+            <p><strong>Baby Tracker</strong> - Bebek Takip Uygulaması</p>
+            <p>Bu gizlilik politikası Türkçe olarak hazırlanmıştır.</p>
+            <p>İngilizce çevirisi için lütfen bizimle iletişime geçin.</p>
+            <div class="version">Versiyon 1.0.0</div>
+        </div>
+    </div>
+</body>
+</html>
