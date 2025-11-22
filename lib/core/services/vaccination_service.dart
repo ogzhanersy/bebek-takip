@@ -28,7 +28,7 @@ class VaccinationService {
           .select()
           .eq('baby_id', babyId)
           .eq('is_completed', false)
-          .gte('scheduled_date', DateTime.now().toIso8601String())
+          .gte('scheduled_date', DateTime.now().toUtc().toIso8601String())
           .order('scheduled_date', ascending: true);
 
       return (response as List)
@@ -46,7 +46,7 @@ class VaccinationService {
           .select()
           .eq('baby_id', babyId)
           .eq('is_completed', false)
-          .lt('scheduled_date', DateTime.now().toIso8601String())
+          .lt('scheduled_date', DateTime.now().toUtc().toIso8601String())
           .order('scheduled_date', ascending: true);
 
       return (response as List)
@@ -113,8 +113,8 @@ class VaccinationService {
       final updateData = {
         'is_completed': true,
         'administered_date': (administeredDate ?? DateTime.now())
-            .toIso8601String(),
-        'updated_at': DateTime.now().toIso8601String(),
+            .toUtc().toIso8601String(),
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
       };
 
       if (location != null) updateData['location'] = location;

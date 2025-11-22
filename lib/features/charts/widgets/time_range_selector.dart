@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/providers/theme_provider.dart';
 
-enum TimeRange {
-  daily,
-  weekly,
-  monthly,
-}
+enum TimeRange { daily, weekly, monthly }
 
 class TimeRangeSelector extends StatelessWidget {
   final TimeRange selectedRange;
@@ -63,31 +59,46 @@ class TimeRangeSelector extends StatelessWidget {
     String label,
   ) {
     final isSelected = selectedRange == range;
+    final hasAd = range == TimeRange.weekly || range == TimeRange.monthly;
+
     return Expanded(
       child: GestureDetector(
         onTap: () => onRangeChanged(range),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected
-                ? themeProvider.primaryColor
-                : Colors.transparent,
+            color: isSelected ? themeProvider.primaryColor : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              color: isSelected
-                  ? Colors.white
-                  : themeProvider.cardForeground,
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected
+                      ? Colors.white
+                      : themeProvider.cardForeground,
+                ),
+              ),
+              if (hasAd) ...[
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.ads_click,
+                  size: 14,
+                  color: isSelected
+                      ? Colors.white.withOpacity(0.9)
+                      : themeProvider.primaryColor,
+                ),
+              ],
+            ],
           ),
         ),
       ),
     );
   }
 }
-

@@ -78,18 +78,20 @@ class _HomeScreenState extends State<HomeScreen> {
           final sleeps = (cache['sleeps'] as List?) ?? [];
           final feedings = (cache['feedings'] as List?) ?? [];
           final diapers = (cache['diapers'] as List?) ?? [];
-          setState(() {
-            _todaySleeps = sleeps
-                .map((e) => Sleep.fromJson(Map<String, dynamic>.from(e)))
-                .toList();
-            _todayFeedings = feedings
-                .map((e) => Feeding.fromJson(Map<String, dynamic>.from(e)))
-                .toList();
-            _todayDiapers = diapers
-                .map((e) => Diaper.fromJson(Map<String, dynamic>.from(e)))
-                .toList();
-            _isLoadingSummary = false;
-          });
+          if (mounted) {
+            setState(() {
+              _todaySleeps = sleeps
+                  .map((e) => Sleep.fromJson(Map<String, dynamic>.from(e)))
+                  .toList();
+              _todayFeedings = feedings
+                  .map((e) => Feeding.fromJson(Map<String, dynamic>.from(e)))
+                  .toList();
+              _todayDiapers = diapers
+                  .map((e) => Diaper.fromJson(Map<String, dynamic>.from(e)))
+                  .toList();
+              _isLoadingSummary = false;
+            });
+          }
           return;
         }
       }
@@ -100,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final currentBaby = babyProvider.selectedBaby;
 
     if (currentBaby == null) {
-      setState(() => _isLoadingSummary = false);
+      if (mounted) setState(() => _isLoadingSummary = false);
       return;
     }
 
@@ -118,39 +120,41 @@ class _HomeScreenState extends State<HomeScreen> {
         DiaperService.getDiapers(currentBaby.id),
       ]);
 
-      setState(() {
-        // Filter sleep records by device date (00:00-23:59)
-        _todaySleeps = (results[0] as List<Sleep>).where((sleep) {
-          final sleepDate = DateTime(
-            sleep.startTime.year,
-            sleep.startTime.month,
-            sleep.startTime.day,
-          );
-          return sleepDate.isAtSameMomentAs(deviceDate);
-        }).toList();
+      if (mounted) {
+        setState(() {
+          // Filter sleep records by device date (00:00-23:59)
+          _todaySleeps = (results[0] as List<Sleep>).where((sleep) {
+            final sleepDate = DateTime(
+              sleep.startTime.year,
+              sleep.startTime.month,
+              sleep.startTime.day,
+            );
+            return sleepDate.isAtSameMomentAs(deviceDate);
+          }).toList();
 
-        // Filter feeding records by device date (00:00-23:59)
-        _todayFeedings = (results[1] as List<Feeding>).where((feeding) {
-          final feedingDate = DateTime(
-            feeding.startTime.year,
-            feeding.startTime.month,
-            feeding.startTime.day,
-          );
-          return feedingDate.isAtSameMomentAs(deviceDate);
-        }).toList();
+          // Filter feeding records by device date (00:00-23:59)
+          _todayFeedings = (results[1] as List<Feeding>).where((feeding) {
+            final feedingDate = DateTime(
+              feeding.startTime.year,
+              feeding.startTime.month,
+              feeding.startTime.day,
+            );
+            return feedingDate.isAtSameMomentAs(deviceDate);
+          }).toList();
 
-        // Filter diaper records by device date (00:00-23:59)
-        _todayDiapers = (results[2] as List<Diaper>).where((diaper) {
-          final diaperDate = DateTime(
-            diaper.time.year,
-            diaper.time.month,
-            diaper.time.day,
-          );
-          return diaperDate.isAtSameMomentAs(deviceDate);
-        }).toList();
+          // Filter diaper records by device date (00:00-23:59)
+          _todayDiapers = (results[2] as List<Diaper>).where((diaper) {
+            final diaperDate = DateTime(
+              diaper.time.year,
+              diaper.time.month,
+              diaper.time.day,
+            );
+            return diaperDate.isAtSameMomentAs(deviceDate);
+          }).toList();
 
-        _isLoadingSummary = false;
-      });
+          _isLoadingSummary = false;
+        });
+      }
 
       // Save cache for offline read
       await CacheService.saveTodayData(
@@ -162,7 +166,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     } catch (e) {
       debugPrint('Error loading today data: $e');
-      setState(() => _isLoadingSummary = false);
+      if (mounted) setState(() => _isLoadingSummary = false);
     }
   }
 
@@ -237,12 +241,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final activities = <Map<String, dynamic>>[];
 
     // Add sleep activities
+    // Note: sleep.endTime is already in local timezone from fromJson()
     for (final sleep in _todaySleeps) {
       if (sleep.endTime != null) {
         activities.add({
           'type': 'sleep',
           'title': 'Uyku bitti',
-          'time': sleep.endTime!.toLocal(),
+          'time': sleep.endTime!,
           'icon': Icons.bedtime_outlined,
           'iconColor': AppColors.primary,
         });
@@ -250,22 +255,24 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     // Add feeding activities
+    // Note: feeding.startTime is already in local timezone from fromJson()
     for (final feeding in _todayFeedings) {
       activities.add({
         'type': 'feeding',
         'title': 'Beslenme',
-        'time': feeding.startTime.toLocal(),
-        'icon': Icons.restaurant_outlined,
+        'time': feeding.startTime,
+        'icon': '🍼',
         'iconColor': AppColors.babyPink,
       });
     }
 
     // Add diaper activities
+    // Note: diaper.time is already in local timezone from fromJson()
     for (final diaper in _todayDiapers) {
       activities.add({
         'type': 'diaper',
         'title': 'Alt değişimi',
-        'time': diaper.time.toLocal(),
+        'time': diaper.time,
         'icon': Icons.child_care_outlined,
         'iconColor': AppColors.babyGreen,
       });
@@ -279,9 +286,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   String _formatTime(DateTime dateTime) {
-    final localTime = dateTime.toLocal();
+    // dateTime is already in local timezone from fromJson()
     final now = DateTime.now();
-    Duration difference = now.difference(localTime);
+    Duration difference = now.difference(dateTime);
     if (difference.isNegative) {
       difference = Duration.zero;
     }
@@ -726,7 +733,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 label: 'Beslenme',
                                                 value:
                                                     '${_todayFeedings.length} kez',
-                                                icon: Icons.restaurant_outlined,
+                                                icon: '🍼',
                                                 iconColor: AppColors.babyPink,
                                                 subtext: 'Bugün',
                                               ),
@@ -818,9 +825,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   bottom: 12,
                                                 ),
                                                 child: ActivityItem(
-                                                  icon:
-                                                      activity['icon']
-                                                          as IconData,
+                                                  icon: activity['icon'],
                                                   title:
                                                       activity['title']
                                                           as String,

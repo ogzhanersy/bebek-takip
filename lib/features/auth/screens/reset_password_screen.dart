@@ -64,9 +64,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         foregroundColor: themeProvider.cardForeground,
         elevation: 0,
       ),
-      body: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
+      body: SafeArea(
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
@@ -208,6 +209,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               ),
             ),
           ),
+        ),
         ),
       ),
     );

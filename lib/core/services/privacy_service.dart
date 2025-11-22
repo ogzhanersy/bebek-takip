@@ -1,5 +1,4 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/foundation.dart';
 
 class PrivacyService {
   static const String _dataCollectionKey = 'data_collection_enabled';
@@ -87,71 +86,50 @@ class PrivacyService {
   void _applySettings() {
     // Data Collection
     if (!_dataCollectionEnabled) {
-      debugPrint('🔒 Data collection disabled');
-      // Disable data collection services
       _disableDataCollection();
     } else {
-      debugPrint('✅ Data collection enabled');
       _enableDataCollection();
     }
 
     // Analytics
     if (!_analyticsEnabled) {
-      debugPrint('🔒 Analytics disabled');
-      // Disable analytics services
       _disableAnalytics();
     } else {
-      debugPrint('✅ Analytics enabled');
       _enableAnalytics();
     }
 
     // Crash Reporting
     if (!_crashReportingEnabled) {
-      debugPrint('🔒 Crash reporting disabled');
-      // Disable crash reporting
       _disableCrashReporting();
     } else {
-      debugPrint('✅ Crash reporting enabled');
       _enableCrashReporting();
     }
 
     // Personalized Ads
     if (!_personalizedAdsEnabled) {
-      debugPrint('🔒 Personalized ads disabled');
-      // Disable personalized ads
       _disablePersonalizedAds();
     } else {
-      debugPrint('✅ Personalized ads enabled');
       _enablePersonalizedAds();
     }
 
     // Photo Access
     if (!_photoAccessEnabled) {
-      debugPrint('🔒 Photo access disabled');
-      // Disable photo access
       _disablePhotoAccess();
     } else {
-      debugPrint('✅ Photo access enabled');
       _enablePhotoAccess();
     }
 
     // Notifications
     if (!_notificationEnabled) {
-      debugPrint('🔒 Notifications disabled');
-      // Disable notifications
       _disableNotifications();
     } else {
-      debugPrint('✅ Notifications enabled');
       _enableNotifications();
     }
 
     // Data Sharing
     if (!_dataSharingEnabled) {
-      debugPrint('🔒 Data sharing disabled');
-      // Disable data sharing
       _disableDataSharing();
     } else {
-      debugPrint('✅ Data sharing enabled');
       _enableDataSharing();
     }
   }

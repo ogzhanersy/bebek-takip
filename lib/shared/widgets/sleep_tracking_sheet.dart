@@ -298,9 +298,6 @@ class _SleepTrackingSheetState extends State<SleepTrackingSheet> {
             endTime,
             notes: notes,
           );
-          debugPrint(
-            'Past sleep saved to Supabase: $_selectedStartTime to $endTime',
-          );
         } else {
           final sleep = Sleep(
             babyId: babyId,
@@ -313,7 +310,7 @@ class _SleepTrackingSheetState extends State<SleepTrackingSheet> {
             'table': 'sleep_records',
             'payload': sleep.toJson(),
           });
-          debugPrint('Past sleep queued for sync');
+          // Past sleep queued for sync
         }
       }
     } catch (e) {
@@ -707,6 +704,7 @@ class _SleepTrackingSheetState extends State<SleepTrackingSheet> {
   }
 
   String _formatTime(DateTime time) {
+    // time is already in local timezone
     final hour = time.hour.toString().padLeft(2, '0');
     final minute = time.minute.toString().padLeft(2, '0');
     return '$hour:$minute';

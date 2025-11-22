@@ -12,14 +12,11 @@ class NotificationHandlerService {
 
   // Handle notification tap
   static void handleNotificationTap(String? payload) {
-    debugPrint('🔔 Notification tapped with payload: $payload');
-
     if (payload == null || payload.isEmpty) return;
 
     try {
       final context = _navigatorKey.currentContext;
       if (context == null) {
-        debugPrint('❌ Navigator context not available');
         return;
       }
 
@@ -56,14 +53,11 @@ class NotificationHandlerService {
           context.go('/settings');
           break;
         default:
-          debugPrint('❌ Unknown notification type: $type');
           // Default to home screen
           context.go('/home');
       }
-
-      debugPrint('✅ Navigated to: $type');
     } catch (e) {
-      debugPrint('❌ Navigation error: $e');
+      debugPrint('Navigation error: $e');
     }
   }
 

@@ -263,7 +263,7 @@ class _SleepChartTabState extends State<SleepChartTab> {
           barRods: [
             BarChartRodData(
               toY: h,
-              color: Colors.indigo,
+              color: const Color(0xFF9FA8DA), // Soft indigo
               width: 22,
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(6),
@@ -283,7 +283,11 @@ class _SleepChartTabState extends State<SleepChartTab> {
         children: [
           Row(
             children: [
-              Icon(Icons.schedule, color: Colors.indigo, size: 24),
+              Icon(
+                Icons.schedule,
+                color: const Color(0xFF9FA8DA),
+                size: 24,
+              ), // Soft indigo
               const SizedBox(width: 8),
               Text(
                 'Saatlik Uyku (Bugün)',
@@ -407,7 +411,11 @@ class _SleepChartTabState extends State<SleepChartTab> {
         children: [
           Row(
             children: [
-              Icon(Icons.bedtime, color: Colors.indigo, size: 24),
+              Icon(
+                Icons.bedtime,
+                color: const Color(0xFF9FA8DA),
+                size: 24,
+              ), // Soft indigo
               const SizedBox(width: 8),
               Text(
                 'Günlük Uyku Süresi',
@@ -518,8 +526,27 @@ class _SleepChartTabState extends State<SleepChartTab> {
     final totalHours = totalHoursDouble.floor();
     final totalMinutes = ((totalHoursDouble - totalHours) * 60).round();
 
-    final dayCount = dailyHours.length == 0 ? 1 : dailyHours.length;
-    final avgHours = totalHoursDouble / dayCount;
+    // Calculate average based on time range
+    double avgHours;
+    String avgText;
+    if (widget.timeRange == TimeRange.daily) {
+      // For daily view: average per sleep session
+      final sleepCount = _sleeps.length;
+      avgHours = sleepCount > 0 ? totalHoursDouble / sleepCount : 0.0;
+      // Format as hours and minutes
+      final avgHoursInt = avgHours.floor();
+      final avgMinutes = ((avgHours - avgHoursInt) * 60).round();
+      avgText = avgHoursInt > 0
+          ? (avgMinutes > 0
+                ? '$avgHoursInt saat $avgMinutes dakika'
+                : '$avgHoursInt saat')
+          : '$avgMinutes dakika';
+    } else {
+      // For weekly/monthly view: average per day
+      final dayCount = dailyHours.length == 0 ? 1 : dailyHours.length;
+      avgHours = totalHoursDouble / dayCount;
+      avgText = '${avgHours.toStringAsFixed(1)} saat';
+    }
 
     return CustomCard(
       padding: const EdgeInsets.all(20),
@@ -547,7 +574,7 @@ class _SleepChartTabState extends State<SleepChartTab> {
             context,
             themeProvider,
             'Ortalama Uyku Süresi',
-            '${avgHours.toStringAsFixed(1)} saat',
+            avgText,
             Icons.trending_up,
           ),
           const SizedBox(height: 12),

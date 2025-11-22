@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/custom_card.dart';
 import '../../../shared/models/diaper_model.dart';
 import '../../../core/services/diaper_service.dart';
 import '../../../shared/widgets/diaper_tracking_sheet.dart';
+import '../../../shared/providers/theme_provider.dart';
 
 class DiaperRecordsBottomSheet extends StatefulWidget {
   final List<Diaper> diapers;
@@ -22,6 +24,7 @@ class DiaperRecordsBottomSheet extends StatefulWidget {
 
 class _DiaperRecordsBottomSheetState extends State<DiaperRecordsBottomSheet> {
   String _formatTime(DateTime dateTime) {
+    // dateTime is already in local timezone from fromJson()
     return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 
@@ -128,165 +131,169 @@ class _DiaperRecordsBottomSheetState extends State<DiaperRecordsBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Handle
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
-            ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        return Container(
+          decoration: BoxDecoration(
+            color: themeProvider.cardBackground,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
-
-          // Header
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.child_care_outlined,
-                  color: AppColors.babyGreen,
-                  size: 24,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: themeProvider.mutedForegroundColor,
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Alt Değişimi Kayıtları',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                Text(
-                  '${widget.diapers.length} kayıt',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.mutedForeground,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Diaper Records List
-          if (widget.diapers.isEmpty)
-            Padding(
-              padding: const EdgeInsets.all(40),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.child_care_outlined,
-                    size: 48,
-                    color: AppColors.mutedForeground,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Bu tarihte alt değişimi kaydı yok',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppColors.mutedForeground,
-                    ),
-                  ),
-                ],
               ),
-            )
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: widget.diapers.length,
-              itemBuilder: (context, index) {
-                final diaper = widget.diapers[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 4,
+
+              // Header
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.child_care_outlined,
+                      color: AppColors.babyGreen,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Alt Değişimi Kayıtları',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '${widget.diapers.length} kayıt',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.mutedForeground,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Diaper Records List
+              if (widget.diapers.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(40),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.child_care_outlined,
+                        size: 48,
+                        color: AppColors.mutedForeground,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Bu tarihte alt değişimi kaydı yok',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: AppColors.mutedForeground,
+                        ),
+                      ),
+                    ],
                   ),
-                  child: CustomCard(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        // Time Info
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _formatTime(diaper.time),
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(fontWeight: FontWeight.w500),
+                )
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: widget.diapers.length,
+                  itemBuilder: (context, index) {
+                    final diaper = widget.diapers[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 4,
+                      ),
+                      child: CustomCard(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            // Time Info
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _formatTime(diaper.time),
+                                    style: Theme.of(context).textTheme.titleMedium
+                                        ?.copyWith(fontWeight: FontWeight.w500),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: _getDiaperTypeColor(
+                                        diaper.type,
+                                      ).withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      _getDiaperTypeText(diaper.type),
+                                      style: Theme.of(context).textTheme.bodySmall
+                                          ?.copyWith(
+                                            color: _getDiaperTypeColor(diaper.type),
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                    ),
+                                  ),
+                                  if (diaper.notes != null &&
+                                      diaper.notes!.isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      diaper.notes!,
+                                      style: Theme.of(context).textTheme.bodySmall
+                                          ?.copyWith(
+                                            color: AppColors.mutedForeground,
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                    ),
+                                  ],
+                                ],
                               ),
-                              const SizedBox(height: 4),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
+                            ),
+
+                            // Actions
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  onPressed: () => _editDiaper(diaper),
+                                  icon: const Icon(Icons.edit_outlined),
+                                  color: AppColors.primary,
                                 ),
-                                decoration: BoxDecoration(
-                                  color: _getDiaperTypeColor(
-                                    diaper.type,
-                                  ).withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  _getDiaperTypeText(diaper.type),
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(
-                                        color: _getDiaperTypeColor(diaper.type),
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                ),
-                              ),
-                              if (diaper.notes != null &&
-                                  diaper.notes!.isNotEmpty) ...[
-                                const SizedBox(height: 4),
-                                Text(
-                                  diaper.notes!,
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(
-                                        color: AppColors.mutedForeground,
-                                        fontStyle: FontStyle.italic,
-                                      ),
+                                IconButton(
+                                  onPressed: () => _showDeleteDialog(diaper),
+                                  icon: const Icon(Icons.delete_outline),
+                                  color: Colors.red,
                                 ),
                               ],
-                            ],
-                          ),
-                        ),
-
-                        // Actions
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              onPressed: () => _editDiaper(diaper),
-                              icon: const Icon(Icons.edit_outlined),
-                              color: AppColors.primary,
-                            ),
-                            IconButton(
-                              onPressed: () => _showDeleteDialog(diaper),
-                              icon: const Icon(Icons.delete_outline),
-                              color: Colors.red,
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+                      ),
+                    );
+                  },
+                ),
 
-          // Bottom padding
-          const SizedBox(height: 20),
-        ],
-      ),
+              // Bottom padding
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
     );
   }
 }

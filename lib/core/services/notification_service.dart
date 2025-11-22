@@ -13,8 +13,6 @@ class NotificationService {
     String? babyName,
   }) async {
     try {
-      debugPrint('📤 Sending feeding reminder for: ${babyName ?? 'Baby'}');
-
       // Send via Supabase function (FCM)
       final success = await _sendViaSupabaseFunction(
         type: 'feeding_reminder',
@@ -28,7 +26,6 @@ class NotificationService {
       );
 
       if (success) {
-        debugPrint('✅ Feeding reminder sent successfully');
         return true;
       } else {
         // Fallback to local notification
@@ -36,11 +33,10 @@ class NotificationService {
           babyName: babyName ?? 'Bebeğiniz',
           payload: 'feeding|$babyId',
         );
-        debugPrint('✅ Feeding reminder sent via local notification');
         return true;
       }
     } catch (e) {
-      debugPrint('❌ Feeding reminder error: $e');
+      debugPrint('Feeding reminder error: $e');
       return false;
     }
   }
@@ -52,17 +48,14 @@ class NotificationService {
     String? babyName,
   }) async {
     try {
-      debugPrint('📤 Sending sleep reminder for: ${babyName ?? 'Baby'}');
-
       await LocalNotificationService.showSleepReminder(
         babyName: babyName ?? 'Bebeğiniz',
         payload: 'sleep|$babyId',
       );
 
-      debugPrint('✅ Sleep reminder sent successfully');
       return true;
     } catch (e) {
-      debugPrint('❌ Sleep reminder error: $e');
+      debugPrint('Sleep reminder error: $e');
       return false;
     }
   }
@@ -74,17 +67,14 @@ class NotificationService {
     String? babyName,
   }) async {
     try {
-      debugPrint('📤 Sending diaper reminder for: ${babyName ?? 'Baby'}');
-
       await LocalNotificationService.showDiaperReminder(
         babyName: babyName ?? 'Bebeğiniz',
         payload: 'diaper|$babyId',
       );
 
-      debugPrint('✅ Diaper reminder sent successfully');
       return true;
     } catch (e) {
-      debugPrint('❌ Diaper reminder error: $e');
+      debugPrint('Diaper reminder error: $e');
       return false;
     }
   }
@@ -96,17 +86,14 @@ class NotificationService {
     String? babyName,
   }) async {
     try {
-      debugPrint('📤 Sending development reminder for: ${babyName ?? 'Baby'}');
-
       await LocalNotificationService.showDevelopmentReminder(
         babyName: babyName ?? 'Bebeğiniz',
         payload: 'development|$babyId',
       );
 
-      debugPrint('✅ Development reminder sent successfully');
       return true;
     } catch (e) {
-      debugPrint('❌ Development reminder error: $e');
+      debugPrint('Development reminder error: $e');
       return false;
     }
   }
@@ -118,17 +105,14 @@ class NotificationService {
     String? babyName,
   }) async {
     try {
-      debugPrint('📤 Sending daily summary for: ${babyName ?? 'Baby'}');
-
       await LocalNotificationService.showDailySummary(
         babyName: babyName ?? 'Bebeğiniz',
         payload: 'daily_summary|$babyId',
       );
 
-      debugPrint('✅ Daily summary sent successfully');
       return true;
     } catch (e) {
-      debugPrint('❌ Daily summary error: $e');
+      debugPrint('Daily summary error: $e');
       return false;
     }
   }
@@ -136,8 +120,6 @@ class NotificationService {
   // Send test notification
   static Future<bool> sendTestNotification({required String userId}) async {
     try {
-      debugPrint('📤 Sending test notification');
-
       // Send via Supabase function (FCM)
       final success = await _sendViaSupabaseFunction(
         type: 'test',
@@ -148,16 +130,14 @@ class NotificationService {
       );
 
       if (success) {
-        debugPrint('✅ Test notification sent successfully');
         return true;
       } else {
         // Fallback to local notification
         await LocalNotificationService.showTestNotification();
-        debugPrint('✅ Test notification sent via local notification');
         return true;
       }
     } catch (e) {
-      debugPrint('❌ Test notification error: $e');
+      debugPrint('Test notification error: $e');
       return false;
     }
   }
@@ -185,17 +165,13 @@ class NotificationService {
       );
 
       if (response.status == 200) {
-        final result = response.data as Map<String, dynamic>;
-        debugPrint(
-          '✅ FCM notification sent successfully: ${result['messageId']}',
-        );
         return true;
       } else {
-        debugPrint('❌ FCM notification failed: ${response.status}');
+        debugPrint('FCM notification failed: ${response.status}');
         return false;
       }
     } catch (e) {
-      debugPrint('❌ FCM notification error: $e');
+      debugPrint('FCM notification error: $e');
       return false;
     }
   }
@@ -208,10 +184,6 @@ class NotificationService {
     required DateTime scheduledTime,
   }) async {
     try {
-      debugPrint(
-        '⏰ Scheduling feeding reminder for: ${babyName ?? 'Baby'} at $scheduledTime',
-      );
-
       await LocalNotificationService.scheduleNotification(
         id: 2001,
         title: '🍼 Beslenme Zamanı',
@@ -222,10 +194,9 @@ class NotificationService {
             LocalNotificationService.getFeedingNotificationDetails(),
       );
 
-      debugPrint('✅ Feeding reminder scheduled successfully');
       return true;
     } catch (e) {
-      debugPrint('❌ Schedule feeding reminder error: $e');
+      debugPrint('Schedule feeding reminder error: $e');
       return false;
     }
   }
@@ -238,10 +209,6 @@ class NotificationService {
     required DateTime scheduledTime,
   }) async {
     try {
-      debugPrint(
-        '⏰ Scheduling sleep reminder for: ${babyName ?? 'Baby'} at $scheduledTime',
-      );
-
       await LocalNotificationService.scheduleNotification(
         id: 2002,
         title: '😴 Uyku Zamanı',
@@ -252,10 +219,9 @@ class NotificationService {
             LocalNotificationService.getSleepNotificationDetails(),
       );
 
-      debugPrint('✅ Sleep reminder scheduled successfully');
       return true;
     } catch (e) {
-      debugPrint('❌ Schedule sleep reminder error: $e');
+      debugPrint('Schedule sleep reminder error: $e');
       return false;
     }
   }
@@ -268,13 +234,11 @@ class NotificationService {
         for (int i = 2001; i <= 2999; i++) {
           await LocalNotificationService.cancelNotification(i);
         }
-        debugPrint('✅ Baby reminders cancelled for: $babyId');
       } else {
         await LocalNotificationService.cancelAllNotifications();
-        debugPrint('✅ All reminders cancelled');
       }
     } catch (e) {
-      debugPrint('❌ Cancel reminders error: $e');
+      debugPrint('Cancel reminders error: $e');
     }
   }
 
@@ -284,7 +248,7 @@ class NotificationService {
     try {
       return await LocalNotificationService.getPendingNotifications();
     } catch (e) {
-      debugPrint('❌ Get pending notifications error: $e');
+      debugPrint('Get pending notifications error: $e');
       return [];
     }
   }

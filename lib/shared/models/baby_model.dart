@@ -61,14 +61,14 @@ class Baby {
       'id': id,
       'user_id': userId,
       'name': name,
-      'birth_date': birthDate.toIso8601String(),
+      'birth_date': birthDate.toUtc().toIso8601String(),
       'gender': gender.toString().split('.').last,
       'weight': weight,
       'height': height,
       'is_primary': isPrimary,
       'avatar': avatar,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': DateTime.now().toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
     };
   }
 

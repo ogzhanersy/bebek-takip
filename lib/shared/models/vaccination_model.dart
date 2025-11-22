@@ -60,13 +60,13 @@ class Vaccination {
       'id': id,
       'baby_id': babyId,
       'vaccine_name': vaccineName,
-      'scheduled_date': scheduledDate.toIso8601String(),
-      'administered_date': administeredDate?.toIso8601String(),
+      'scheduled_date': scheduledDate.toUtc().toIso8601String(),
+      'administered_date': administeredDate?.toUtc().toIso8601String(),
       'location': location,
       'notes': notes,
       'is_completed': isCompleted,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt.toUtc().toIso8601String(),
     };
   }
 

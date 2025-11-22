@@ -73,7 +73,7 @@ class BabiesScreen extends StatelessWidget {
                                 message:
                                     'Bebek takibine başlamak için önce bir bebek eklemeniz gerekiyor.',
                                 buttonText: 'Bebek Ekle',
-                                onPressed: () => context.go('/add-baby'),
+                                onPressed: () => _navigateToAddBaby(context),
                               ),
                             ),
                           );
@@ -102,11 +102,7 @@ class BabiesScreen extends StatelessWidget {
           // Add Baby Button
           CustomCard(
             padding: const EdgeInsets.all(20),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const AddBabyScreen()),
-              );
-            },
+            onTap: () => _navigateToAddBaby(context),
             child: Row(
               children: [
                 Container(
@@ -441,6 +437,56 @@ class BabiesScreen extends StatelessWidget {
         return '$years yaş $months aylık';
       } else {
         return '$years yaşında';
+      }
+    }
+  }
+
+  Future<void> _navigateToAddBaby(BuildContext context) async {
+    // Reklamları kontrol et
+    if (!AdService.adsEnabled || AdService().isAdFree) {
+      // Reklamlar devre dışıysa direkt geç
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (context) => const AddBabyScreen()));
+      return;
+    }
+
+    // Interstitial ad yükle
+    await AdService().loadInterstitialAd();
+
+    // Ad yüklenmesini bekle (maksimum 2 saniye)
+    int attempts = 0;
+    bool adLoaded = false;
+    while (attempts < 20 && !adLoaded) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (AdService().isInterstitialAdLoaded) {
+        adLoaded = true;
+        break;
+      }
+      attempts++;
+    }
+
+    // Ad yüklendiyse göster, sonra AddBabyScreen'e geç
+    if (adLoaded) {
+      AdService().showInterstitialAd(
+        onAdShowed: () {
+          // Ad gösterildi
+        },
+        onAdDismissed: () {
+          // Ad kapandığında AddBabyScreen'e geç
+          if (context.mounted) {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const AddBabyScreen()),
+            );
+          }
+        },
+      );
+    } else {
+      // Ad yüklenemediyse direkt geç
+      if (context.mounted) {
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => const AddBabyScreen()));
       }
     }
   }

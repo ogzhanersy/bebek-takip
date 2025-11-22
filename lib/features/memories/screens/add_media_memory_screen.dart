@@ -45,11 +45,7 @@ class _AddMediaMemoryScreenState extends State<AddMediaMemoryScreen> {
     {'id': 'first_sit', 'name': 'İlk Oturma', 'icon': Icons.accessibility},
     {'id': 'first_clap', 'name': 'İlk Alkış', 'icon': Icons.pan_tool},
     {'id': 'first_wave', 'name': 'İlk El Sallama', 'icon': Icons.waving_hand},
-    {
-      'id': 'first_solid_food',
-      'name': 'İlk Katı Gıda',
-      'icon': Icons.restaurant,
-    },
+    {'id': 'first_solid_food', 'name': 'İlk Katı Gıda', 'icon': '🍼'},
     {'id': 'first_bath', 'name': 'İlk Banyo', 'icon': Icons.bathtub},
     {
       'id': 'first_sleep_through',
@@ -339,11 +335,16 @@ class _AddMediaMemoryScreenState extends State<AddMediaMemoryScreen> {
                 value: milestone['id'],
                 child: Row(
                   children: [
-                    Icon(
-                      milestone['icon'],
-                      size: 20,
-                      color: themeProvider.primaryColor,
-                    ),
+                    milestone['icon'] is IconData
+                        ? Icon(
+                            milestone['icon'],
+                            size: 20,
+                            color: themeProvider.primaryColor,
+                          )
+                        : Text(
+                            milestone['icon'] as String,
+                            style: TextStyle(fontSize: 20),
+                          ),
                     const SizedBox(width: 12),
                     Text(
                       milestone['name'],

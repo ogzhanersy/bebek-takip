@@ -142,7 +142,7 @@ class _DiaperTrackingSheetState extends State<DiaperTrackingSheet> {
             'table': 'diaper_records',
             'payload': diaper.toJson(),
           });
-          debugPrint('Diaper queued for sync: ${diaper.type}');
+          // Diaper queued for sync
         }
       }
 

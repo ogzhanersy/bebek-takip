@@ -135,7 +135,7 @@ class _OverviewChartTabState extends State<OverviewChartTab> {
                     .fold<int>(0, (sum, f) => sum + (f.amount ?? 0))
                     .toString(),
                 'ml süt',
-                Icons.restaurant,
+                '🍼',
                 Colors.purple,
               ),
               const SizedBox(height: 16),
@@ -215,7 +215,7 @@ class _OverviewChartTabState extends State<OverviewChartTab> {
     String subtitle,
     String value,
     String unit,
-    IconData icon,
+    dynamic icon, // IconData or String (emoji)
     Color color,
   ) {
     return CustomCard(
@@ -228,7 +228,12 @@ class _OverviewChartTabState extends State<OverviewChartTab> {
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: color, size: 28),
+            child: icon is IconData
+                ? Icon(icon, color: color, size: 28)
+                : Text(
+                    icon as String,
+                    style: TextStyle(fontSize: 28),
+                  ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -285,8 +290,26 @@ class _OverviewChartTabState extends State<OverviewChartTab> {
   ) {
     final dailyHours = _getDailySleepHours();
     final totalHours = dailyHours.values.fold<double>(0.0, (a, b) => a + b);
-    final dayCount = dailyHours.isEmpty ? 1 : dailyHours.length;
-    final avgSleepPerDay = totalHours / dayCount;
+    
+    // Calculate average based on time range
+    double avgSleepPerDay;
+    String avgSleepText;
+    if (widget.timeRange == TimeRange.daily) {
+      // For daily view: average per sleep session
+      final sleepCount = _sleeps.length;
+      avgSleepPerDay = sleepCount > 0 ? totalHours / sleepCount : 0.0;
+      // Format as hours and minutes
+      final avgHoursInt = avgSleepPerDay.floor();
+      final avgMinutes = ((avgSleepPerDay - avgHoursInt) * 60).round();
+      avgSleepText = avgHoursInt > 0
+          ? (avgMinutes > 0 ? '$avgHoursInt saat $avgMinutes dakika' : '$avgHoursInt saat')
+          : '$avgMinutes dakika';
+    } else {
+      // For weekly/monthly view: average per day
+      final dayCount = dailyHours.isEmpty ? 1 : dailyHours.length;
+      avgSleepPerDay = totalHours / dayCount;
+      avgSleepText = '${avgSleepPerDay.toStringAsFixed(1)} saat';
+    }
 
     final start = _rangeStart;
     final end = _rangeEnd;
@@ -294,9 +317,18 @@ class _OverviewChartTabState extends State<OverviewChartTab> {
     if (start != null && end != null) {
       feedingDayCount = end.difference(start).inDays + 1;
     }
-    final avgFeedingPerDay = feedingDayCount > 0
-        ? _feedings.length / feedingDayCount
-        : 0.0;
+    
+    // Calculate average based on time range
+    double avgFeedingPerDay;
+    if (widget.timeRange == TimeRange.daily) {
+      // For daily view: total feedings for the day (average = total for 1 day)
+      avgFeedingPerDay = _feedings.length.toDouble();
+    } else {
+      // For weekly/monthly view: average per day
+      avgFeedingPerDay = feedingDayCount > 0
+          ? _feedings.length / feedingDayCount
+          : 0.0;
+    }
 
     return CustomCard(
       padding: const EdgeInsets.all(20),
@@ -316,7 +348,7 @@ class _OverviewChartTabState extends State<OverviewChartTab> {
             context,
             themeProvider,
             'Ortalama Uyku (Günlük)',
-          '${avgSleepPerDay.toStringAsFixed(1)} saat',
+            avgSleepText,
           ),
           const SizedBox(height: 12),
           _buildStatRow(

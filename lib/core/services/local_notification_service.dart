@@ -45,9 +45,8 @@ class LocalNotificationService {
       await _requestPermissions();
 
       _initialized = true;
-      debugPrint('✅ Local Notification Service initialized');
     } catch (e) {
-      debugPrint('❌ Local Notification Service initialization error: $e');
+      debugPrint('Local Notification Service initialization error: $e');
     }
   }
 
@@ -69,7 +68,6 @@ class LocalNotificationService {
 
   // Handle notification tap
   static void _onNotificationTapped(NotificationResponse response) {
-    debugPrint('🔔 Notification tapped: ${response.payload}');
     NotificationHandlerService.handleNotificationTap(response.payload);
   }
 
@@ -89,9 +87,8 @@ class LocalNotificationService {
         notificationDetails ?? _getDefaultNotificationDetails(),
         payload: payload,
       );
-      debugPrint('✅ Notification shown: $title');
     } catch (e) {
-      debugPrint('❌ Show notification error: $e');
+      debugPrint('Show notification error: $e');
     }
   }
 
@@ -114,10 +111,8 @@ class LocalNotificationService {
 
         final canScheduleExactAlarms = await androidPlugin
             ?.canScheduleExactNotifications();
-        debugPrint('🔍 Can schedule exact alarms: $canScheduleExactAlarms');
 
         if (canScheduleExactAlarms == false) {
-          debugPrint('⚠️ Exact alarms not permitted, requesting permission...');
           await androidPlugin?.requestExactAlarmsPermission();
         }
       }
@@ -131,9 +126,8 @@ class LocalNotificationService {
         payload: payload,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       );
-      debugPrint('✅ Notification scheduled: $title at $scheduledDate');
     } catch (e) {
-      debugPrint('❌ Schedule notification error: $e');
+      debugPrint('Schedule notification error: $e');
     }
   }
 
@@ -141,9 +135,8 @@ class LocalNotificationService {
   static Future<void> cancelNotification(int id) async {
     try {
       await _notifications.cancel(id);
-      debugPrint('✅ Notification cancelled: $id');
     } catch (e) {
-      debugPrint('❌ Cancel notification error: $e');
+      debugPrint('Cancel notification error: $e');
     }
   }
 
@@ -151,9 +144,8 @@ class LocalNotificationService {
   static Future<void> cancelAllNotifications() async {
     try {
       await _notifications.cancelAll();
-      debugPrint('✅ All notifications cancelled');
     } catch (e) {
-      debugPrint('❌ Cancel all notifications error: $e');
+      debugPrint('Cancel all notifications error: $e');
     }
   }
 
@@ -163,7 +155,7 @@ class LocalNotificationService {
     try {
       return await _notifications.pendingNotificationRequests();
     } catch (e) {
-      debugPrint('❌ Get pending notifications error: $e');
+      debugPrint('Get pending notifications error: $e');
       return [];
     }
   }

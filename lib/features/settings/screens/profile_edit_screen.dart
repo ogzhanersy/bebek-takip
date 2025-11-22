@@ -37,6 +37,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   File? _profilePhoto;
   String? _currentAvatarUrl;
   final ImagePicker _picker = ImagePicker();
+  final GlobalKey _profilePhotoKey = GlobalKey();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -538,14 +539,152 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     );
   }
 
+  void _viewProfilePhoto(ThemeProvider themeProvider) {
+    final imageWidget = _profilePhoto != null
+        ? Image.file(_profilePhoto!, fit: BoxFit.contain)
+        : _currentAvatarUrl != null
+        ? Image.network(
+            _currentAvatarUrl!,
+            fit: BoxFit.contain,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Center(
+                child: CircularProgressIndicator(
+                  value: loadingProgress.expectedTotalBytes != null
+                      ? loadingProgress.cumulativeBytesLoaded /
+                            loadingProgress.expectedTotalBytes!
+                      : null,
+                ),
+              );
+            },
+            errorBuilder: (context, error, stackTrace) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: themeProvider.mutedForegroundColor,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Resim yüklenemedi',
+                      style: TextStyle(
+                        color: themeProvider.mutedForegroundColor,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          )
+        : null;
+
+    if (imageWidget == null) return;
+
+    showDialog(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.zero,
+        child: Stack(
+          children: [
+            Center(
+              child: InteractiveViewer(
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: imageWidget,
+              ),
+            ),
+            Positioned(
+              top: 40,
+              right: 20,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showProfilePhotoMenu(
+    ThemeProvider themeProvider,
+    BuildContext context,
+  ) {
+    final hasPhoto = _profilePhoto != null || _currentAvatarUrl != null;
+    final RenderBox? renderBox =
+        _profilePhotoKey.currentContext?.findRenderObject() as RenderBox?;
+
+    if (renderBox == null) return;
+
+    final Offset globalPosition = renderBox.localToGlobal(Offset.zero);
+    final Size avatarSize = renderBox.size;
+
+    // Position menu at the bottom-right corner of the avatar
+    // Menu's top-left corner starts at avatar's bottom-right corner
+    final double menuLeft = globalPosition.dx + avatarSize.width;
+    final double menuTop = globalPosition.dy + avatarSize.height;
+
+    showMenu(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        menuLeft,
+        menuTop,
+        menuLeft + 200, // Right edge estimate
+        menuTop + (hasPhoto ? 100.0 : 50.0), // Bottom edge estimate
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: themeProvider.cardBackground,
+      items: [
+        if (hasPhoto)
+          PopupMenuItem<String>(
+            value: 'view',
+            child: Row(
+              children: [
+                Icon(
+                  Icons.visibility,
+                  color: themeProvider.primaryColor,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                const Text('Görüntüle'),
+              ],
+            ),
+          ),
+        PopupMenuItem<String>(
+          value: 'change',
+          child: Row(
+            children: [
+              Icon(Icons.edit, color: themeProvider.primaryColor, size: 20),
+              const SizedBox(width: 12),
+              const Text('Değiştir'),
+            ],
+          ),
+        ),
+      ],
+    ).then((value) {
+      if (value == 'view') {
+        _viewProfilePhoto(themeProvider);
+      } else if (value == 'change') {
+        _pickProfilePhoto();
+      }
+    });
+  }
+
   Widget _buildHeroProfileSection(ThemeProvider themeProvider) {
     return CustomCard(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
           GestureDetector(
-            onTap: _pickProfilePhoto,
+            onTap: () => _showProfilePhotoMenu(themeProvider, context),
             child: CircleAvatar(
+              key: _profilePhotoKey,
               radius: 50,
               backgroundColor: themeProvider.primaryColor.withValues(
                 alpha: 0.1,

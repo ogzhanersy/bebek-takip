@@ -52,7 +52,7 @@ class _TrackingBottomSheetState extends State<TrackingBottomSheet> {
             child: Row(
               children: [
                 _buildTab(0, 'Uyku', Icons.bedtime_outlined),
-                _buildTab(1, 'Beslenme', Icons.restaurant_outlined),
+                _buildTab(1, 'Beslenme', '🍼'),
                 _buildTab(2, 'Alt Değiştirme', Icons.child_care_outlined),
               ],
             ),
@@ -72,7 +72,7 @@ class _TrackingBottomSheetState extends State<TrackingBottomSheet> {
     );
   }
 
-  Widget _buildTab(int index, String label, IconData icon) {
+  Widget _buildTab(int index, String label, dynamic icon) { // IconData or String (emoji)
     final isSelected = _selectedTab == index;
     return Expanded(
       child: GestureDetector(
@@ -86,13 +86,23 @@ class _TrackingBottomSheetState extends State<TrackingBottomSheet> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: 18,
-                color: isSelected
-                    ? AppColors.primaryForeground
-                    : AppColors.mutedForeground,
-              ),
+              icon is IconData
+                  ? Icon(
+                      icon,
+                      size: 18,
+                      color: isSelected
+                          ? AppColors.primaryForeground
+                          : AppColors.mutedForeground,
+                    )
+                  : Text(
+                      icon as String,
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: isSelected
+                            ? AppColors.primaryForeground
+                            : AppColors.mutedForeground,
+                      ),
+                    ),
               const SizedBox(width: 6),
               Text(
                 label,
@@ -207,7 +217,7 @@ class _TrackingBottomSheetState extends State<TrackingBottomSheet> {
             Expanded(
               child: _buildFeedingTypeCard(
                 'Biberon',
-                Icons.local_drink,
+                '🍼',
                 FeedingType.bottle,
               ),
             ),
@@ -346,7 +356,7 @@ class _TrackingBottomSheetState extends State<TrackingBottomSheet> {
     );
   }
 
-  Widget _buildFeedingTypeCard(String label, IconData icon, FeedingType type) {
+  Widget _buildFeedingTypeCard(String label, dynamic icon, FeedingType type) { // IconData or String (emoji)
     final isSelected = _selectedFeedingType == type;
     return GestureDetector(
       onTap: () => setState(() => _selectedFeedingType = type),
@@ -364,11 +374,16 @@ class _TrackingBottomSheetState extends State<TrackingBottomSheet> {
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              color: isSelected ? AppColors.primary : AppColors.mutedForeground,
-              size: 24,
-            ),
+            icon is IconData
+                ? Icon(
+                    icon,
+                    color: isSelected ? AppColors.primary : AppColors.mutedForeground,
+                    size: 24,
+                  )
+                : Text(
+                    icon as String,
+                    style: TextStyle(fontSize: 24),
+                  ),
             const SizedBox(height: 8),
             Text(
               label,
@@ -415,7 +430,7 @@ class _TrackingBottomSheetState extends State<TrackingBottomSheet> {
     );
   }
 
-  Widget _buildDiaperTypeCard(String label, IconData icon, String value) {
+  Widget _buildDiaperTypeCard(String label, dynamic icon, String value) { // IconData or String (emoji)
     final isSelected = _selectedDiaperType == value;
     return GestureDetector(
       onTap: () => setState(() => _selectedDiaperType = value),
@@ -433,11 +448,16 @@ class _TrackingBottomSheetState extends State<TrackingBottomSheet> {
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              color: isSelected ? AppColors.primary : AppColors.mutedForeground,
-              size: 20,
-            ),
+            icon is IconData
+                ? Icon(
+                    icon,
+                    color: isSelected ? AppColors.primary : AppColors.mutedForeground,
+                    size: 20,
+                  )
+                : Text(
+                    icon as String,
+                    style: TextStyle(fontSize: 20),
+                  ),
             const SizedBox(height: 6),
             Text(
               label,

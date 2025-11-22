@@ -66,8 +66,8 @@ class MemoryService {
       final response = await SupabaseService.from(tableName)
           .select()
           .eq('baby_id', babyId)
-          .gte('memory_date', startDate.toIso8601String())
-          .lte('memory_date', endDate.toIso8601String())
+          .gte('memory_date', startDate.toUtc().toIso8601String())
+          .lte('memory_date', endDate.toUtc().toIso8601String())
           .order('memory_date', ascending: false);
 
       return (response as List).map((json) => Memory.fromJson(json)).toList();
@@ -330,11 +330,11 @@ class MemoryService {
       }
 
       if (startDate != null) {
-        query = query.gte('memory_date', startDate.toIso8601String());
+        query = query.gte('memory_date', startDate.toUtc().toIso8601String());
       }
 
       if (endDate != null) {
-        query = query.lte('memory_date', endDate.toIso8601String());
+        query = query.lte('memory_date', endDate.toUtc().toIso8601String());
       }
 
       if (isFavorite != null) {

@@ -31,8 +31,9 @@ class PrivacyPolicyScreen extends StatelessWidget {
             ),
             centerTitle: true,
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -59,6 +60,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                 // Footer
                 _buildFooter(themeProvider),
               ],
+            ),
             ),
           ),
         );
@@ -418,24 +420,8 @@ Bu gizlilik politikası aşağıdaki durumlarda güncellenebilir:
           _buildContactItem(
             icon: Icons.email,
             label: 'E-posta',
-            value: 'privacy@babytracker.com',
-            onTap: () => _launchEmail('privacy@babytracker.com'),
-            themeProvider: themeProvider,
-          ),
-          const SizedBox(height: 8),
-          _buildContactItem(
-            icon: Icons.phone,
-            label: 'Telefon',
-            value: '+90 (212) 555-0123',
-            onTap: () => _launchPhone('+902125550123'),
-            themeProvider: themeProvider,
-          ),
-          const SizedBox(height: 8),
-          _buildContactItem(
-            icon: Icons.web,
-            label: 'Web Sitesi',
-            value: 'www.babytracker.com',
-            onTap: () => _launchUrl('https://www.babytracker.com'),
+            value: 'destek@bebektakip.com',
+            onTap: () => _launchEmail('destek@bebektakip.com'),
             themeProvider: themeProvider,
           ),
         ],
@@ -521,20 +507,6 @@ Bu gizlilik politikası aşağıdaki durumlarda güncellenebilir:
     final Uri emailUri = Uri(scheme: 'mailto', path: email);
     if (await canLaunchUrl(emailUri)) {
       await launchUrl(emailUri);
-    }
-  }
-
-  Future<void> _launchPhone(String phone) async {
-    final Uri phoneUri = Uri(scheme: 'tel', path: phone);
-    if (await canLaunchUrl(phoneUri)) {
-      await launchUrl(phoneUri);
-    }
-  }
-
-  Future<void> _launchUrl(String url) async {
-    final Uri uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 }

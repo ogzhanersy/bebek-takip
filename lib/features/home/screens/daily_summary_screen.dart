@@ -11,6 +11,7 @@ import '../../../shared/models/diaper_model.dart';
 import '../../../core/services/sleep_service.dart';
 import '../../../core/services/feeding_service.dart';
 import '../../../core/services/diaper_service.dart';
+import '../../../core/services/ad_service.dart';
 import '../widgets/sleep_records_bottom_sheet.dart';
 import '../widgets/feeding_records_bottom_sheet.dart';
 import '../widgets/diaper_records_bottom_sheet.dart';
@@ -80,10 +81,12 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
   }
 
   List<Sleep> _getSleepsForDate(DateTime date) {
+    // date is already in local timezone
     final dayStart = DateTime(date.year, date.month, date.day);
     final dayEnd = dayStart.add(const Duration(days: 1));
 
     final filteredSleeps = _allSleeps.where((sleep) {
+      // sleep.startTime is already in local timezone from fromJson()
       return sleep.startTime.isAfter(
             dayStart.subtract(const Duration(milliseconds: 1)),
           ) &&
@@ -94,10 +97,12 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
   }
 
   List<Feeding> _getFeedingsForDate(DateTime date) {
+    // date is already in local timezone
     final dayStart = DateTime(date.year, date.month, date.day);
     final dayEnd = dayStart.add(const Duration(days: 1));
 
     final filteredFeedings = _allFeedings.where((feeding) {
+      // feeding.startTime is already in local timezone from fromJson()
       return feeding.startTime.isAfter(
             dayStart.subtract(const Duration(milliseconds: 1)),
           ) &&
@@ -108,10 +113,12 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
   }
 
   List<Diaper> _getDiapersForDate(DateTime date) {
+    // date is already in local timezone
     final dayStart = DateTime(date.year, date.month, date.day);
     final dayEnd = dayStart.add(const Duration(days: 1));
 
     final filteredDiapers = _allDiapers.where((diaper) {
+      // diaper.time is already in local timezone from fromJson()
       return diaper.time.isAfter(
             dayStart.subtract(const Duration(milliseconds: 1)),
           ) &&
@@ -279,211 +286,222 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
               decoration: BoxDecoration(
                 gradient: themeProvider.homeBackgroundGradient,
               ),
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : Column(
-                      children: [
-                        // Date Selector
-                        Container(
-                          margin: const EdgeInsets.all(16),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: themeProvider.cardBackground,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              IconButton(
-                                onPressed: () {
-                                  // Don't allow going before birth date
-                                  if (!_isAtMinDate()) {
-                                    setState(() {
-                                      _selectedDate = _selectedDate.subtract(
-                                        const Duration(days: 1),
-                                      );
-                                    });
-                                  }
-                                },
-                                icon: Icon(
-                                  Icons.chevron_left,
-                                  color: _isAtMinDate()
-                                      ? Colors.grey
-                                      : themeProvider.cardForeground,
+              child: SafeArea(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : Column(
+                        children: [
+                          // Date Selector
+                          Container(
+                            margin: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: themeProvider.cardBackground,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.1),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
                                 ),
-                              ),
-                              Text(
-                                _formatDate(_selectedDate),
-                                style: Theme.of(context).textTheme.titleLarge
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: themeProvider.cardForeground,
-                                    ),
-                              ),
-                              IconButton(
-                                onPressed: () {
-                                  // Don't allow going beyond today
-                                  if (!_isAtMaxDate()) {
-                                    setState(() {
-                                      _selectedDate = _selectedDate.add(
-                                        const Duration(days: 1),
-                                      );
-                                    });
-                                  }
-                                },
-                                icon: Icon(
-                                  Icons.chevron_right,
-                                  color: _isAtMaxDate()
-                                      ? Colors.grey
-                                      : themeProvider.cardForeground,
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    // Don't allow going before birth date
+                                    if (!_isAtMinDate()) {
+                                      setState(() {
+                                        _selectedDate = _selectedDate.subtract(
+                                          const Duration(days: 1),
+                                        );
+                                      });
+                                    }
+                                  },
+                                  icon: Icon(
+                                    Icons.chevron_left,
+                                    color: _isAtMinDate()
+                                        ? Colors.grey
+                                        : themeProvider.cardForeground,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // Summary Cards
-                        Expanded(
-                          child: ListView(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            children: [
-                              // Sleep Summary
-                              GestureDetector(
-                                onTap: _showSleepRecords,
-                                child: CustomCard(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.bedtime_outlined,
-                                            color: AppColors.primary,
-                                            size: 24,
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Text(
-                                            'Uyku',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleMedium
-                                                ?.copyWith(
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                          ),
-                                        ],
+                                Text(
+                                  _formatDate(_selectedDate),
+                                  style: Theme.of(context).textTheme.titleLarge
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color: themeProvider.cardForeground,
                                       ),
-                                      const SizedBox(height: 16),
-                                      _buildSummaryRow(
-                                        'Toplam Süre',
-                                        _calculateTotalSleepDuration(
-                                          _getSleepsForDate(_selectedDate),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    // Don't allow going beyond today
+                                    if (!_isAtMaxDate()) {
+                                      setState(() {
+                                        _selectedDate = _selectedDate.add(
+                                          const Duration(days: 1),
+                                        );
+                                      });
+                                    }
+                                  },
+                                  icon: Icon(
+                                    Icons.chevron_right,
+                                    color: _isAtMaxDate()
+                                        ? Colors.grey
+                                        : themeProvider.cardForeground,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Summary Cards
+                          Expanded(
+                            child: ListView(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              children: [
+                                // Sleep Summary
+                                GestureDetector(
+                                  onTap: _showSleepRecords,
+                                  child: CustomCard(
+                                    padding: const EdgeInsets.all(20),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.bedtime_outlined,
+                                              color: AppColors.primary,
+                                              size: 24,
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Text(
+                                              'Uyku',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleMedium
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                            ),
+                                          ],
                                         ),
-                                      ),
-                                      _buildSummaryRow(
-                                        'Kayıt Sayısı',
-                                        '${_getSleepsForDate(_selectedDate).length} kez',
-                                      ),
-                                    ],
+                                        const SizedBox(height: 16),
+                                        _buildSummaryRow(
+                                          'Toplam Süre',
+                                          _calculateTotalSleepDuration(
+                                            _getSleepsForDate(_selectedDate),
+                                          ),
+                                        ),
+                                        _buildSummaryRow(
+                                          'Kayıt Sayısı',
+                                          '${_getSleepsForDate(_selectedDate).length} kez',
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
 
-                              const SizedBox(height: 16),
+                                const SizedBox(height: 16),
 
-                              // Feeding Summary
-                              GestureDetector(
-                                onTap: _showFeedingRecords,
-                                child: CustomCard(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.restaurant_outlined,
-                                            color: AppColors.babyPink,
-                                            size: 24,
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Text(
-                                            'Beslenme',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleMedium
-                                                ?.copyWith(
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 16),
-                                      _buildSummaryRow(
-                                        'Kayıt Sayısı',
-                                        '${_getFeedingsForDate(_selectedDate).length} kez',
-                                      ),
-                                    ],
+                                // Feeding Summary
+                                GestureDetector(
+                                  onTap: _showFeedingRecords,
+                                  child: CustomCard(
+                                    padding: const EdgeInsets.all(20),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              '🍼',
+                                              style: TextStyle(fontSize: 24),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Text(
+                                              'Beslenme',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleMedium
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 16),
+                                        _buildSummaryRow(
+                                          'Toplam Kayıt',
+                                          '${_getFeedingsForDate(_selectedDate).length} kez',
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
 
-                              const SizedBox(height: 16),
+                                const SizedBox(height: 16),
 
-                              // Diaper Summary
-                              GestureDetector(
-                                onTap: _showDiaperRecords,
-                                child: CustomCard(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.child_care_outlined,
-                                            color: AppColors.babyGreen,
-                                            size: 24,
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Text(
-                                            'Alt Değişimi',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleMedium
-                                                ?.copyWith(
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 16),
-                                      _buildSummaryRow(
-                                        'Kayıt Sayısı',
-                                        '${_getDiapersForDate(_selectedDate).length} kez',
-                                      ),
-                                    ],
+                                // Diaper Summary
+                                GestureDetector(
+                                  onTap: _showDiaperRecords,
+                                  child: CustomCard(
+                                    padding: const EdgeInsets.all(20),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.child_care_outlined,
+                                              color: AppColors.babyGreen,
+                                              size: 24,
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Text(
+                                              'Alt Değişimi',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleMedium
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 16),
+                                        _buildSummaryRow(
+                                          'Kayıt Sayısı',
+                                          '${_getDiapersForDate(_selectedDate).length} kez',
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
 
-                              const SizedBox(height: 32),
-                            ],
+                                const SizedBox(height: 32),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+
+                          // Banner Ad at the bottom
+                          Container(
+                            width: double.infinity,
+                            alignment: Alignment.center,
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: const BannerAdWidget(),
+                          ),
+                        ],
+                      ),
+              ),
             ),
           ),
         );

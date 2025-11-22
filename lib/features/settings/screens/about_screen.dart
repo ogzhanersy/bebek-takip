@@ -20,239 +20,245 @@ class AboutScreen extends StatelessWidget {
             foregroundColor: themeProvider.cardForeground,
             elevation: 0,
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // App Info Card
-                CustomCard(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    children: [
-                      // App Icon
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFE1BEE7), Color(0xFFF8BBD9)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Icon(
-                          Icons.child_care,
-                          color: Colors.white,
-                          size: 40,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Bebek Takip',
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: themeProvider.cardForeground,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // App Info Card
+                  CustomCard(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      children: [
+                        // App Icon
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFE1BEE7), Color(0xFFF8BBD9)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
                             ),
-                      ),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Icon(
+                            Icons.child_care,
+                            color: Colors.white,
+                            size: 40,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Bebek Takip',
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: themeProvider.cardForeground,
+                              ),
+                        ),
                       const SizedBox(height: 8),
                       Text(
-                        'Versiyon 1.0.2',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: themeProvider.mutedForegroundColor,
+                        'Versiyon 1.1.3',
+                        style: Theme.of(context).textTheme.bodyMedium
+                            ?.copyWith(
+                              color: themeProvider.mutedForegroundColor,
+                            ),
+                      ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Bebeğinizin gelişimini takip etmek ve önemli anları kaydetmek için tasarlanmış kapsamlı bir uygulama.',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: themeProvider.cardForeground),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Bebeğinizin gelişimini takip etmek ve önemli anları kaydetmek için tasarlanmış kapsamlı bir uygulama.',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: themeProvider.cardForeground,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Features Card
-                CustomCard(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.star_outline,
-                            color: themeProvider.primaryColor,
-                            size: 24,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Özellikler',
-                            style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: themeProvider.cardForeground,
-                                ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      _buildFeatureItem(
-                        context,
-                        themeProvider,
-                        Icons.bedtime,
-                        'Uyku Takibi',
-                        'Bebeğinizin uyku düzenini takip edin',
-                      ),
-                      _buildFeatureItem(
-                        context,
-                        themeProvider,
-                        Icons.restaurant,
-                        'Beslenme Kayıtları',
-                        'Emzirme ve mama kayıtlarını tutun',
-                      ),
-                      _buildFeatureItem(
-                        context,
-                        themeProvider,
-                        Icons.child_care,
-                        'Alt Değişimi',
-                        'Alt değişimi zamanlarını kaydedin',
-                      ),
-                      _buildFeatureItem(
-                        context,
-                        themeProvider,
-                        Icons.straighten,
-                        'Gelişim Takibi',
-                        'Kilo, boy ve baş çevresi ölçümleri',
-                      ),
-                      _buildFeatureItem(
-                        context,
-                        themeProvider,
-                        Icons.photo_camera,
-                        'Anılar',
-                        'Özel anları fotoğraf ve notlarla kaydedin',
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Contact Card
-                CustomCard(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.contact_support_outlined,
-                            color: themeProvider.primaryColor,
-                            size: 24,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'İletişim',
-                            style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: themeProvider.cardForeground,
-                                ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      _buildContactItem(
-                        context,
-                        themeProvider,
-                        Icons.email_outlined,
-                        'E-posta',
-                        'destek@bebektakip.com',
-                        'mailto:destek@bebektakip.com',
-                      ),
-                      // Web sitesi kaldırıldı
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Legal Card
-                CustomCard(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.gavel_outlined,
-                            color: themeProvider.primaryColor,
-                            size: 24,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Yasal Bilgiler',
-                            style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: themeProvider.cardForeground,
-                                ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Icon(
-                          Icons.privacy_tip_outlined,
-                          color: themeProvider.mutedForegroundColor,
-                        ),
-                        title: Text(
-                          'Gizlilik Politikası',
-                          style: TextStyle(color: themeProvider.cardForeground),
-                        ),
-                        onTap: () {
-                          // Navigate to privacy policy
-                        },
-                      ),
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Icon(
-                          Icons.description_outlined,
-                          color: themeProvider.mutedForegroundColor,
-                        ),
-                        title: Text(
-                          'Kullanım Koşulları',
-                          style: TextStyle(color: themeProvider.cardForeground),
-                        ),
-                        onTap: () {
-                          // Navigate to terms of service
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 32),
-
-                // Copyright
-                Center(
-                  child: Text(
-                    '© 2024 Bebek Takip. Tüm hakları saklıdır.',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: themeProvider.mutedForegroundColor,
+                      ],
                     ),
                   ),
-                ),
-              ],
+
+                  const SizedBox(height: 16),
+
+                  // Features Card
+                  CustomCard(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.star_outline,
+                              color: themeProvider.primaryColor,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              'Özellikler',
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: themeProvider.cardForeground,
+                                  ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        _buildFeatureItem(
+                          context,
+                          themeProvider,
+                          Icons.bedtime,
+                          'Uyku Takibi',
+                          'Bebeğinizin uyku düzenini takip edin',
+                        ),
+                        _buildFeatureItem(
+                          context,
+                          themeProvider,
+                          '🍼',
+                          'Beslenme Kayıtları',
+                          'Emzirme ve mama kayıtlarını tutun',
+                        ),
+                        _buildFeatureItem(
+                          context,
+                          themeProvider,
+                          Icons.child_care,
+                          'Alt Değişimi',
+                          'Alt değişimi zamanlarını kaydedin',
+                        ),
+                        _buildFeatureItem(
+                          context,
+                          themeProvider,
+                          Icons.straighten,
+                          'Gelişim Takibi',
+                          'Kilo, boy ve baş çevresi ölçümleri',
+                        ),
+                        _buildFeatureItem(
+                          context,
+                          themeProvider,
+                          Icons.photo_camera,
+                          'Anılar',
+                          'Özel anları fotoğraf ve notlarla kaydedin',
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Contact Card
+                  CustomCard(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.contact_support_outlined,
+                              color: themeProvider.primaryColor,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              'İletişim',
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: themeProvider.cardForeground,
+                                  ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        _buildContactItem(
+                          context,
+                          themeProvider,
+                          Icons.email_outlined,
+                          'E-posta',
+                          'destek@bebektakip.com',
+                          'mailto:destek@bebektakip.com',
+                        ),
+                        // Web sitesi kaldırıldı
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Legal Card
+                  CustomCard(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.gavel_outlined,
+                              color: themeProvider.primaryColor,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              'Yasal Bilgiler',
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: themeProvider.cardForeground,
+                                  ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(
+                            Icons.privacy_tip_outlined,
+                            color: themeProvider.mutedForegroundColor,
+                          ),
+                          title: Text(
+                            'Gizlilik Politikası',
+                            style: TextStyle(
+                              color: themeProvider.cardForeground,
+                            ),
+                          ),
+                          onTap: () {
+                            // Navigate to privacy policy
+                          },
+                        ),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(
+                            Icons.description_outlined,
+                            color: themeProvider.mutedForegroundColor,
+                          ),
+                          title: Text(
+                            'Kullanım Koşulları',
+                            style: TextStyle(
+                              color: themeProvider.cardForeground,
+                            ),
+                          ),
+                          onTap: () {
+                            // Navigate to terms of service
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Copyright
+                  Center(
+                    child: Text(
+                      '© 2024 Bebek Takip. Tüm hakları saklıdır.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: themeProvider.mutedForegroundColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -263,7 +269,7 @@ class AboutScreen extends StatelessWidget {
   Widget _buildFeatureItem(
     BuildContext context,
     ThemeProvider themeProvider,
-    IconData icon,
+    dynamic icon, // IconData or String (emoji)
     String title,
     String description,
   ) {
@@ -271,7 +277,9 @@ class AboutScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          Icon(icon, color: themeProvider.primaryColor, size: 20),
+          icon is IconData
+              ? Icon(icon, color: themeProvider.primaryColor, size: 20)
+              : Text(icon as String, style: TextStyle(fontSize: 20)),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

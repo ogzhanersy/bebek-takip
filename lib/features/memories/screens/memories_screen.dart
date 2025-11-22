@@ -175,9 +175,58 @@ class _MemoriesScreenState extends State<MemoriesScreen> {
             ),
           ],
         ),
-        child: memory.type == MemoryType.note
-            ? _buildNoteGridCard(memory, themeProvider)
-            : _buildMediaGridCard(memory, themeProvider),
+        child: Stack(
+          children: [
+            memory.type == MemoryType.note
+                ? _buildNoteGridCard(memory, themeProvider)
+                : _buildMediaGridCard(memory, themeProvider),
+            // Heart Icon - Bottom Right
+            Positioned(
+              bottom: 8,
+              right: 8,
+              child: GestureDetector(
+                onTap: () async {
+                  try {
+                    await MemoryService.toggleFavorite(memory.id);
+                    _loadMemories();
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Favori durumu güncellenirken hata oluştu: $e',
+                          ),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: themeProvider.cardBackground.withValues(alpha: 0.9),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    memory.isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: memory.isFavorite
+                        ? Colors.red
+                        : themeProvider.mutedForegroundColor,
+                    size: 18,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -204,8 +253,6 @@ class _MemoriesScreenState extends State<MemoriesScreen> {
                 ),
               ),
               const Spacer(),
-              if (memory.isFavorite)
-                Icon(Icons.favorite, size: 16, color: Colors.red),
             ],
           ),
 
@@ -339,26 +386,15 @@ class _MemoriesScreenState extends State<MemoriesScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Title and Favorite Icon
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        memory.title,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: themeProvider.cardForeground,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    // Favorite Icon
-                    if (memory.isFavorite) ...[
-                      const SizedBox(width: 4),
-                      Icon(Icons.favorite, size: 14, color: Colors.red),
-                    ],
-                  ],
+                // Title
+                Text(
+                  memory.title,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: themeProvider.cardForeground,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
 
                 const SizedBox(height: 4),
@@ -1122,6 +1158,7 @@ class _MemoriesScreenState extends State<MemoriesScreen> {
                           ),
                         );
                       },
+                      onFavoriteChanged: _loadMemories,
                     ),
                   ),
                 )

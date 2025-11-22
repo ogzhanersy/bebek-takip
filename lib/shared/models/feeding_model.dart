@@ -25,9 +25,9 @@ class Feeding {
     this.notes,
     DateTime? createdAt,
     DateTime? updatedAt,
-  })  : id = id ?? const Uuid().v4(),
-        createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now();
+  }) : id = id ?? const Uuid().v4(),
+       createdAt = createdAt ?? DateTime.now(),
+       updatedAt = updatedAt ?? DateTime.now();
 
   // Copy with method for immutable updates
   Feeding copyWith({
@@ -62,18 +62,28 @@ class Feeding {
       'id': id,
       'baby_id': babyId,
       'type': type.toString().split('.').last,
-      'start_time': startTime.toIso8601String(),
-      'end_time': endTime?.toIso8601String(),
+      'start_time': startTime.toUtc().toIso8601String(),
+      'end_time': endTime?.toUtc().toIso8601String(),
       'amount': amount,
       'side': side,
       'notes': notes,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt.toUtc().toIso8601String(),
     };
   }
 
   // JSON deserialization from Supabase
   factory Feeding.fromJson(Map<String, dynamic> json) {
+    // Parse UTC string from Supabase and convert to local time
+    // Supabase stores all times in UTC (ISO8601 with 'Z' suffix)
+    DateTime parseDateTime(String dateTimeStr) {
+      // DateTime.parse() automatically recognizes UTC strings (ending with 'Z')
+      // and creates a UTC DateTime. We convert it to local time.
+      final parsed = DateTime.parse(dateTimeStr);
+      // Always convert to local time - Supabase always stores UTC
+      return parsed.toLocal();
+    }
+
     return Feeding(
       id: json['id'] as String,
       babyId: json['baby_id'] as String,
@@ -81,15 +91,15 @@ class Feeding {
         (e) => e.toString().split('.').last == json['type'],
         orElse: () => FeedingType.breastfeeding,
       ),
-      startTime: DateTime.parse(json['start_time'] as String),
-      endTime: json['end_time'] != null 
-          ? DateTime.parse(json['end_time'] as String) 
+      startTime: parseDateTime(json['start_time'] as String),
+      endTime: json['end_time'] != null
+          ? parseDateTime(json['end_time'] as String)
           : null,
       amount: json['amount'] as int?,
       side: json['side'] as String?,
       notes: json['notes'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: parseDateTime(json['created_at'] as String),
+      updatedAt: parseDateTime(json['updated_at'] as String),
     );
   }
 
@@ -102,7 +112,7 @@ class Feeding {
   String get durationText {
     final dur = duration;
     if (dur == null) return 'Devam ediyor...';
-    
+
     final minutes = dur.inMinutes;
     return '${minutes}dk';
   }

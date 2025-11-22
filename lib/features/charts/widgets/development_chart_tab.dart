@@ -207,7 +207,7 @@ class _DevelopmentChartTabState extends State<DevelopmentChartTab> {
                     themeProvider,
                     'Kilo (kg)',
                     weightSpots,
-                    Colors.blue,
+                    const Color(0xFF90CAF9), // Soft blue
                     Icons.monitor_weight,
                     targetMin:
                         _targets?.weightMinKg ??
@@ -230,7 +230,7 @@ class _DevelopmentChartTabState extends State<DevelopmentChartTab> {
                     themeProvider,
                     'Boy (cm)',
                     heightSpots,
-                    Colors.green,
+                    const Color(0xFF81C784), // Soft green
                     Icons.height,
                     targetMin:
                         _targets?.heightMinCm ??
@@ -253,7 +253,7 @@ class _DevelopmentChartTabState extends State<DevelopmentChartTab> {
                     themeProvider,
                     'Baş Çevresi (cm)',
                     headSpots,
-                    Colors.orange,
+                    const Color(0xFFFFB74D), // Soft orange
                     Icons.rounded_corner,
                   ),
                 ],

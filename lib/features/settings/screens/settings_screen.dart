@@ -1,21 +1,258 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/services/baby_service.dart';
+import '../../../core/services/feeding_service.dart';
+import '../../../core/services/sleep_service.dart';
 // import '../../../core/services/firebase_service.dart';
 // import '../../../core/services/notification_service.dart';
 // import '../../../core/services/onesignal_service.dart';  // Temporarily disabled
 import '../../../shared/widgets/custom_card.dart';
 import '../../../shared/widgets/bottom_navigation.dart';
 import '../../../shared/providers/theme_provider.dart';
+import '../../../core/services/privacy_service.dart';
 // Removed duplicate language selector that used a separate provider/sheet
 import 'profile_edit_screen.dart';
 import 'help_support_screen.dart';
 import 'about_screen.dart';
+import 'privacy_policy_screen.dart';
+import '../../../shared/widgets/privacy_settings_sheet.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool _notificationEnabled = true;
+  bool _isLoadingStats = false;
+  Map<String, int> _accountStats = {'babies': 0, 'feedings': 0, 'sleeps': 0};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotificationSetting();
+    _loadAccountStatistics();
+  }
+
+  Future<void> _loadNotificationSetting() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _notificationEnabled = prefs.getBool('notification_enabled') ?? true;
+    });
+  }
+
+  Future<void> _loadAccountStatistics() async {
+    setState(() {
+      _isLoadingStats = true;
+    });
+
+    try {
+      final currentUser = SupabaseService.currentUser;
+      if (currentUser == null) {
+        setState(() {
+          _isLoadingStats = false;
+        });
+        return;
+      }
+
+      // Get babies count
+      final babies = await BabyService.getBabies();
+      int babiesCount = babies.length;
+
+      // Get total feedings count
+      int feedingsCount = 0;
+      for (final baby in babies) {
+        try {
+          final feedings = await FeedingService.getFeedingRecords(baby.id);
+          feedingsCount += feedings.length;
+        } catch (e) {
+          // Ignore errors for individual babies
+        }
+      }
+
+      // Get total sleep records count
+      int sleepsCount = 0;
+      for (final baby in babies) {
+        try {
+          final sleeps = await SleepService.getSleepRecords(baby.id);
+          sleepsCount += sleeps.length;
+        } catch (e) {
+          // Ignore errors for individual babies
+        }
+      }
+
+      setState(() {
+        _accountStats = {
+          'babies': babiesCount,
+          'feedings': feedingsCount,
+          'sleeps': sleepsCount,
+        };
+        _isLoadingStats = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingStats = false;
+      });
+    }
+  }
+
+  Future<void> _toggleNotification(bool value) async {
+    setState(() {
+      _notificationEnabled = value;
+    });
+    await PrivacyService().updateSetting('notification_enabled', value);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(value ? 'Bildirimler açıldı' : 'Bildirimler kapatıldı'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _showPrivacySettings() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => const PrivacySettingsSheet(),
+    );
+  }
+
+  void _showFeedbackDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.feedback_outlined, color: AppColors.primary, size: 24),
+            const SizedBox(width: 12),
+            const Text('Geri Bildirim'),
+          ],
+        ),
+        content: const Text(
+          'Uygulama hakkındaki görüşlerinizi bizimle paylaşın. Geliştirmemize yardımcı olun!',
+          style: TextStyle(fontSize: 16),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Kapat',
+              style: TextStyle(
+                color: AppColors.mutedForeground,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              // Open email or feedback form
+              final email = 'destek@bebektakip.com';
+              final subject = Uri.encodeComponent(
+                'Bebek Takip - Geri Bildirim',
+              );
+              final body = Uri.encodeComponent('Merhaba,\n\n');
+              final uri = Uri.parse(
+                'mailto:$email?subject=$subject&body=$body',
+              );
+
+              try {
+                // Try to launch email app with external application mode
+                if (await canLaunchUrl(uri)) {
+                  final launched = await launchUrl(
+                    uri,
+                    mode: LaunchMode.externalApplication,
+                  );
+
+                  if (!launched && mounted) {
+                    // If launch failed, copy email to clipboard
+                    await Clipboard.setData(ClipboardData(text: email));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'E-posta uygulaması açılamadı. E-posta adresi panoya kopyalandı: $email',
+                        ),
+                        backgroundColor: Colors.orange,
+                        duration: const Duration(seconds: 4),
+                        action: SnackBarAction(
+                          label: 'Tamam',
+                          textColor: Colors.white,
+                          onPressed: () {},
+                        ),
+                      ),
+                    );
+                  }
+                } else {
+                  // If canLaunchUrl returns false, copy email to clipboard
+                  await Clipboard.setData(ClipboardData(text: email));
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'E-posta uygulaması bulunamadı. E-posta adresi panoya kopyalandı: $email',
+                        ),
+                        backgroundColor: Colors.orange,
+                        duration: const Duration(seconds: 4),
+                        action: SnackBarAction(
+                          label: 'Tamam',
+                          textColor: Colors.white,
+                          onPressed: () {},
+                        ),
+                      ),
+                    );
+                  }
+                }
+              } catch (e) {
+                // If any error occurs, copy email to clipboard as fallback
+                await Clipboard.setData(ClipboardData(text: email));
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'E-posta açılırken hata oluştu. E-posta adresi panoya kopyalandı: $email',
+                      ),
+                      backgroundColor: Colors.orange,
+                      duration: const Duration(seconds: 4),
+                      action: SnackBarAction(
+                        label: 'Tamam',
+                        textColor: Colors.white,
+                        onPressed: () {},
+                      ),
+                    ),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'E-posta Gönder',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> _showLogoutDialog(BuildContext context) async {
     return showDialog<void>(
@@ -364,10 +601,111 @@ class SettingsScreen extends StatelessWidget {
                           ),
 
                           const SizedBox(height: 16), // Alt boşluk
+                          // Account Statistics Card
+                          if (user != null)
+                            CustomCard(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: themeProvider.primaryColor
+                                                .withValues(alpha: 0.1),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                          child: Icon(
+                                            Icons.analytics_outlined,
+                                            color: themeProvider.primaryColor,
+                                            size: 20,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Text(
+                                          'Hesap İstatistikleri',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (_isLoadingStats)
+                                    const Padding(
+                                      padding: EdgeInsets.all(16),
+                                      child: Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    )
+                                  else
+                                    Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        16,
+                                        0,
+                                        16,
+                                        16,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: _buildStatItem(
+                                              context,
+                                              themeProvider,
+                                              Icons.child_care,
+                                              'Bebekler',
+                                              '${_accountStats['babies']}',
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: _buildStatItem(
+                                              context,
+                                              themeProvider,
+                                              Icons.restaurant,
+                                              'Beslenme',
+                                              '${_accountStats['feedings']}',
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: _buildStatItem(
+                                              context,
+                                              themeProvider,
+                                              Icons.bedtime,
+                                              'Uyku',
+                                              '${_accountStats['sleeps']}',
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+
+                          const SizedBox(height: 16),
+
                           // Settings Options
                           CustomCard(
                             child: Column(
                               children: [
+                                // Notification Settings
+                                _buildNotificationSetting(
+                                  context,
+                                  themeProvider,
+                                ),
+
+                                const Divider(),
+
                                 // Language Selection (single source of truth)
 
                                 // OneSignal Test (Temporarily disabled)
@@ -544,7 +882,82 @@ class SettingsScreen extends StatelessWidget {
                                   },
                                 ),
 
-                                // Alttaki ikinci Hakkında kaldırıldı
+                                const Divider(),
+
+                                _buildSettingItem(
+                                  context,
+                                  icon: Icons.privacy_tip_outlined,
+                                  title: 'Gizlilik Politikası',
+                                  subtitle: 'Veri koruma ve gizlilik bilgileri',
+                                  onTap: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const PrivacyPolicyScreen(),
+                                      ),
+                                    );
+                                  },
+                                ),
+
+                                const Divider(),
+
+                                _buildSettingItem(
+                                  context,
+                                  icon: Icons.settings_outlined,
+                                  title: 'Gizlilik Ayarları',
+                                  subtitle: 'Veri ve gizlilik tercihleriniz',
+                                  onTap: _showPrivacySettings,
+                                ),
+
+                                const Divider(),
+
+                                _buildSettingItem(
+                                  context,
+                                  icon: Icons.feedback_outlined,
+                                  title: 'Geri Bildirim',
+                                  subtitle: 'Görüşlerinizi bizimle paylaşın',
+                                  onTap: _showFeedbackDialog,
+                                ),
+
+                                const Divider(),
+
+                                // App Version
+                                Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.info_outline,
+                                        color:
+                                            themeProvider.mutedForegroundColor,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        'Uygulama Versiyonu',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              color: themeProvider
+                                                  .mutedForegroundColor,
+                                            ),
+                                      ),
+                                      const Spacer(),
+                                      Text(
+                                        '1.1.3 (8)',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                              color: themeProvider
+                                                  .mutedForegroundColor,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -678,6 +1091,86 @@ class SettingsScreen extends StatelessWidget {
       ),
       onTap: onTap,
       contentPadding: EdgeInsets.zero,
+    );
+  }
+
+  Widget _buildNotificationSetting(
+    BuildContext context,
+    ThemeProvider themeProvider,
+  ) {
+    return ListTile(
+      leading: Container(
+        margin: const EdgeInsets.only(left: 8),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          Icons.notifications_outlined,
+          color: AppColors.primary,
+          size: 20,
+        ),
+      ),
+      title: Text(
+        'Bildirimler',
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
+      subtitle: Text(
+        'Push bildirimleri ve hatırlatmalar',
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
+      ),
+      trailing: Container(
+        margin: const EdgeInsets.only(right: 8),
+        child: Switch(
+          value: _notificationEnabled,
+          onChanged: _toggleNotification,
+          activeColor: AppColors.primary,
+        ),
+      ),
+      contentPadding: EdgeInsets.zero,
+    );
+  }
+
+  Widget _buildStatItem(
+    BuildContext context,
+    ThemeProvider themeProvider,
+    IconData icon,
+    String label,
+    String value,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: themeProvider.primaryColor.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: themeProvider.primaryColor.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: themeProvider.primaryColor, size: 24),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: themeProvider.primaryColor,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: themeProvider.mutedForegroundColor,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 

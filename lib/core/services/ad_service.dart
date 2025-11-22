@@ -8,13 +8,16 @@ class AdService {
   factory AdService() => _instance;
   AdService._internal();
 
-  // Test Ad Unit IDs - Production'da gerçek ID'lerle değiştirilecek
+  // Reklamlar aktif
+  static const bool _adsEnabled = true;
+
+  // Production Ad Unit IDs
   static String get _bannerAdUnitId => Platform.isAndroid
-      ? 'ca-app-pub-3940256099942544/6300978111' // Test Banner Android
-      : 'ca-app-pub-3940256099942544/2934735716'; // Test Banner iOS
+      ? 'ca-app-pub-6831342609343630/6178076325' // Production Banner Android
+      : 'ca-app-pub-3940256099942544/2934735716'; // Test Banner iOS (henüz oluşturulmadı)
 
   static String get _interstitialAdUnitId => Platform.isAndroid
-      ? 'ca-app-pub-3940256099942544/1033173712' // Test Interstitial Android
+      ? 'ca-app-pub-6831342609343630/9704126478' // Production Interstitial Android
       : 'ca-app-pub-3940256099942544/4411468910'; // Test Interstitial iOS
 
   static String get _rewardedAdUnitId => Platform.isAndroid
@@ -30,10 +33,12 @@ class AdService {
 
   // AdMob'u başlat
   static Future<void> initialize() async {
+    if (!_adsEnabled) {
+      return;
+    }
     await MobileAds.instance.initialize();
     await AdService()._loadUserPreferences();
     AdService()._isInitialized = true;
-    debugPrint('AdService initialized successfully');
   }
 
   // Kullanıcı tercihlerini yükle
@@ -44,6 +49,9 @@ class AdService {
 
   // Banner reklam oluştur
   BannerAd createBannerAd() {
+    if (!_adsEnabled) {
+      throw Exception('Reklamlar devre dışı');
+    }
     return BannerAd(
       adUnitId: _bannerAdUnitId,
       size: AdSize.banner,
@@ -57,10 +65,10 @@ class AdService {
           ad.dispose();
         },
         onAdOpened: (ad) {
-          debugPrint('Banner ad opened');
+          // Ad opened
         },
         onAdClosed: (ad) {
-          debugPrint('Banner ad closed');
+          // Ad closed
         },
       ),
     );
@@ -68,7 +76,7 @@ class AdService {
 
   // Interstitial reklam yükle
   Future<void> loadInterstitialAd() async {
-    if (_isAdFree) return;
+    if (!_adsEnabled || _isAdFree) return;
 
     await InterstitialAd.load(
       adUnitId: _interstitialAdUnitId,
@@ -76,7 +84,6 @@ class AdService {
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
           _interstitialAd = ad;
-          debugPrint('Interstitial ad loaded');
         },
         onAdFailedToLoad: (error) {
           debugPrint('Interstitial ad failed to load: $error');
@@ -86,25 +93,35 @@ class AdService {
     );
   }
 
+  // Interstitial ad yüklendi mi?
+  bool get isInterstitialAdLoaded => _interstitialAd != null;
+
   // Interstitial reklam göster
-  Future<void> showInterstitialAd() async {
-    if (_isAdFree || _interstitialAd == null) return;
+  Future<void> showInterstitialAd({
+    VoidCallback? onAdDismissed,
+    VoidCallback? onAdShowed,
+  }) async {
+    if (!_adsEnabled || _isAdFree || _interstitialAd == null) {
+      onAdDismissed?.call();
+      return;
+    }
 
     _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
       onAdShowedFullScreenContent: (ad) {
-        debugPrint('Interstitial ad showed full screen content');
+        onAdShowed?.call();
       },
       onAdDismissedFullScreenContent: (ad) {
-        debugPrint('Interstitial ad dismissed');
         ad.dispose();
         _interstitialAd = null;
         // Yeni interstitial reklam yükle
         loadInterstitialAd();
+        onAdDismissed?.call();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         debugPrint('Interstitial ad failed to show: $error');
         ad.dispose();
         _interstitialAd = null;
+        onAdDismissed?.call();
       },
     );
 
@@ -113,7 +130,7 @@ class AdService {
 
   // Rewarded reklam yükle
   Future<void> loadRewardedAd() async {
-    if (_isAdFree) return;
+    if (!_adsEnabled || _isAdFree) return;
 
     await RewardedAd.load(
       adUnitId: _rewardedAdUnitId,
@@ -121,7 +138,6 @@ class AdService {
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {
           _rewardedAd = ad;
-          debugPrint('Rewarded ad loaded');
         },
         onAdFailedToLoad: (error) {
           debugPrint('Rewarded ad failed to load: $error');
@@ -133,16 +149,15 @@ class AdService {
 
   // Rewarded reklam göster
   Future<bool> showRewardedAd() async {
-    if (_isAdFree || _rewardedAd == null) return false;
+    if (!_adsEnabled || _isAdFree || _rewardedAd == null) return false;
 
     bool rewardEarned = false;
 
     _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
       onAdShowedFullScreenContent: (ad) {
-        debugPrint('Rewarded ad showed full screen content');
+        // Ad showed
       },
       onAdDismissedFullScreenContent: (ad) {
-        debugPrint('Rewarded ad dismissed');
         ad.dispose();
         _rewardedAd = null;
         // Yeni rewarded reklam yükle
@@ -157,7 +172,6 @@ class AdService {
 
     await _rewardedAd!.show(
       onUserEarnedReward: (ad, reward) {
-        debugPrint('User earned reward: ${reward.amount} ${reward.type}');
         rewardEarned = true;
       },
     );
@@ -177,6 +191,9 @@ class AdService {
 
   // Reklam servisi hazır mı?
   bool get isInitialized => _isInitialized;
+
+  // Reklamlar aktif mi?
+  static bool get adsEnabled => _adsEnabled;
 
   // Reklamsız deneyimi aktif et
   Future<void> enableAdFree() async {
@@ -219,9 +236,15 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   }
 
   void _loadBannerAd() {
-    if (AdService().isAdFree) return;
+    // Reklamlar devre dışı bırakıldı
+    if (!AdService.adsEnabled || AdService().isAdFree) return;
 
-    _bannerAd = AdService().createBannerAd();
+    try {
+      _bannerAd = AdService().createBannerAd();
+    } catch (e) {
+      // Reklamlar devre dışıysa sessizce geç
+      return;
+    }
     _bannerAd!.load().then((_) {
       if (mounted) {
         setState(() {
@@ -239,7 +262,11 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (AdService().isAdFree || !_isAdLoaded || _bannerAd == null) {
+    // Reklamlar devre dışı bırakıldı - her zaman boş widget döndür
+    if (!AdService.adsEnabled ||
+        AdService().isAdFree ||
+        !_isAdLoaded ||
+        _bannerAd == null) {
       return const SizedBox.shrink();
     }
 

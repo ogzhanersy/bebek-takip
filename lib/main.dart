@@ -14,6 +14,7 @@ import 'core/services/ad_service.dart';
 import 'features/onboarding/screens/onboarding_screen.dart';
 import 'features/onboarding/widgets/app_wrapper.dart';
 import 'features/splash/splash_screen.dart';
+import 'features/splash/ad_screen.dart';
 import 'features/auth/screens/forgot_password_screen.dart';
 import 'features/auth/screens/reset_password_screen.dart';
 import 'features/babies/screens/babies_screen.dart';
@@ -61,11 +62,15 @@ void main() async {
   await PrivacyService().initialize();
 
   // Set status bar style to match iOS design
+  // Note: For Android 15+, edge-to-edge is handled in MainActivity
+  // SystemChrome is only used for older Android versions to avoid deprecated APIs
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
+      // statusBarColor is deprecated in Android 15, but still needed for older versions
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
       statusBarBrightness: Brightness.light,
+      // systemNavigationBarColor is deprecated in Android 15, but still needed for older versions
       systemNavigationBarColor: AppColors.background,
       systemNavigationBarIconBrightness: Brightness.dark,
     ),
@@ -89,6 +94,7 @@ final GoRouter _router = GoRouter(
   },
   routes: [
     GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
+    GoRoute(path: '/ad', builder: (context, state) => const AdScreen()),
     GoRoute(path: '/', builder: (context, state) => const AppWrapper()),
     GoRoute(
       path: '/onboarding',
@@ -271,6 +277,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     : ThemeMode.light,
                 routerConfig: _router,
                 debugShowCheckedModeBanner: false,
+                // Enable edge-to-edge for Android 15+ compatibility
                 builder: (context, child) {
                   return MediaQuery(
                     data: MediaQuery.of(context).copyWith(

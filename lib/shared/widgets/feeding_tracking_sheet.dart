@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
@@ -32,6 +33,15 @@ class _FeedingTrackingSheetState extends State<FeedingTrackingSheet> {
   DateTime _selectedDateTime = DateTime.now();
   bool _hasSelectedDateTime = false;
 
+  // Timer for breastfeeding
+  Timer? _timer;
+  int _elapsedSeconds = 0;
+  bool _isTimerRunning = false;
+  bool _isTimerPaused = false;
+  DateTime? _timerStartTime;
+  DateTime? _pausedTime;
+  int _pausedElapsedSeconds = 0;
+
   @override
   void initState() {
     super.initState();
@@ -56,9 +66,188 @@ class _FeedingTrackingSheetState extends State<FeedingTrackingSheet> {
 
   @override
   void dispose() {
+    _timer?.cancel();
     _notesController.dispose();
     _amountController.dispose();
     super.dispose();
+  }
+
+  void _startTimer() {
+    if (_isTimerRunning) return;
+
+    setState(() {
+      _isTimerRunning = true;
+      _isTimerPaused = false;
+      _timerStartTime = DateTime.now();
+      if (_pausedTime != null) {
+        // Resume from pause
+        final pauseDuration = DateTime.now().difference(_pausedTime!);
+        _pausedElapsedSeconds += pauseDuration.inSeconds;
+      }
+    });
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {
+          _elapsedSeconds = _pausedElapsedSeconds +
+              DateTime.now().difference(_timerStartTime!).inSeconds;
+        });
+      }
+    });
+  }
+
+  void _pauseTimer() {
+    if (!_isTimerRunning) return;
+
+    setState(() {
+      _isTimerRunning = false;
+      _isTimerPaused = true;
+      _pausedTime = DateTime.now();
+      _pausedElapsedSeconds = _elapsedSeconds;
+    });
+
+    _timer?.cancel();
+  }
+
+  void _stopTimer() {
+    setState(() {
+      _isTimerRunning = false;
+      _isTimerPaused = false;
+      _elapsedSeconds = 0;
+      _pausedElapsedSeconds = 0;
+      _timerStartTime = null;
+      _pausedTime = null;
+    });
+
+    _timer?.cancel();
+  }
+
+  Future<void> _stopTimerAndSave() async {
+    // Stop timer first but keep the data for saving
+    final wasRunning = _isTimerRunning;
+    final wasPaused = _isTimerPaused;
+    final elapsed = _elapsedSeconds;
+    final startTime = _timerStartTime;
+    
+    _timer?.cancel();
+    
+    // Auto-save if it's breastfeeding, timer was running or paused, and we have valid data
+    if (_selectedType == FeedingType.breastfeeding &&
+        (wasRunning || wasPaused) &&
+        elapsed > 0 &&
+        startTime != null &&
+        _selectedSide != null) {
+      // Save the feeding automatically
+      await _saveFeedingWithTimerData(startTime, elapsed);
+    } else {
+      // Just stop the timer without saving
+      _stopTimer();
+    }
+  }
+
+  Future<void> _saveFeedingWithTimerData(DateTime startTime, int elapsedSeconds) async {
+    if (_isLoading) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final babyProvider = context.read<BabyProvider>();
+      final currentBaby = babyProvider.selectedBaby;
+
+      if (currentBaby == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Lütfen önce bir bebek seçin'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        _stopTimer();
+        return;
+      }
+
+      if (currentBaby.id.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Bebek ID\'si geçersiz. Lütfen bebek seçimini kontrol edin.',
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        _stopTimer();
+        return;
+      }
+
+      // Calculate end time from timer data
+      final endTime = startTime.add(Duration(seconds: elapsedSeconds));
+
+      final feeding = Feeding(
+        babyId: currentBaby.id,
+        type: _selectedType,
+        side: _selectedSide,
+        notes: _showNotes && _notesController.text.isNotEmpty
+            ? _notesController.text.trim()
+            : null,
+        startTime: startTime,
+        endTime: endTime,
+      );
+
+      // Save the feeding
+      if (await SyncService.isOnline()) {
+        await FeedingService.createFeeding(feeding);
+      } else {
+        await SyncService.enqueue({
+          'type': 'create',
+          'table': 'feeding_records',
+          'payload': feeding.toJson(),
+        });
+      }
+
+      // Stop timer after saving
+      _stopTimer();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Beslenme kaydedildi'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // Call callback to refresh parent screen
+        widget.onFeedingSaved?.call();
+        // Close bottom sheet
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('İşlem sırasında hata oluştu: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      _stopTimer();
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  String _formatTimer(int seconds) {
+    final hours = seconds ~/ 3600;
+    final minutes = (seconds % 3600) ~/ 60;
+    final secs = seconds % 60;
+
+    if (hours > 0) {
+      return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+    }
+    return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 
   Future<void> _selectDateTime() async {
@@ -128,6 +317,19 @@ class _FeedingTrackingSheetState extends State<FeedingTrackingSheet> {
         return;
       }
 
+      // Calculate end time for breastfeeding with timer
+      DateTime? endTime;
+      if (_selectedType == FeedingType.breastfeeding &&
+          _isTimerRunning &&
+          _timerStartTime != null) {
+        endTime = DateTime.now();
+      } else if (_selectedType == FeedingType.breastfeeding &&
+          _elapsedSeconds > 0 &&
+          _timerStartTime != null) {
+        // Timer was stopped, calculate end time
+        endTime = _timerStartTime!.add(Duration(seconds: _elapsedSeconds));
+      }
+
       final feeding = Feeding(
         id: widget
             .feedingToEdit
@@ -141,8 +343,14 @@ class _FeedingTrackingSheetState extends State<FeedingTrackingSheet> {
         notes: _showNotes && _notesController.text.isNotEmpty
             ? _notesController.text.trim()
             : null,
-        startTime: _hasSelectedDateTime ? _selectedDateTime : DateTime.now(),
+        startTime: _hasSelectedDateTime ? _selectedDateTime : (_timerStartTime ?? DateTime.now()),
+        endTime: endTime,
       );
+
+      // Stop timer after saving
+      if (_selectedType == FeedingType.breastfeeding) {
+        _stopTimer();
+      }
 
       if (widget.feedingToEdit != null) {
         // Edit modunda - mevcut kaydı güncelle
@@ -278,7 +486,7 @@ class _FeedingTrackingSheetState extends State<FeedingTrackingSheet> {
                   Expanded(
                     child: _buildTypeButton(
                       'Biberon',
-                      Icons.local_drink,
+                      '🍼',
                       FeedingType.bottle,
                     ),
                   ),
@@ -368,6 +576,127 @@ class _FeedingTrackingSheetState extends State<FeedingTrackingSheet> {
                   ],
                 ),
                 const SizedBox(height: 20),
+
+                // Timer Display and Controls
+                if (_selectedSide != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: themeProvider.primaryColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: themeProvider.primaryColor.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        // Timer Display
+                        Text(
+                          _formatTimer(_elapsedSeconds),
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: themeProvider.primaryColor,
+                            fontFeatures: [const FontFeature.tabularFigures()],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        // Control Buttons
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (!_isTimerRunning && !_isTimerPaused) ...[
+                              // Start button
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  _startTimer();
+                                },
+                                icon: const Icon(Icons.play_arrow),
+                                label: const Text('Başlat'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: themeProvider.primaryColor,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
+                                  ),
+                                ),
+                              ),
+                            ] else if (_isTimerRunning) ...[
+                              // Pause button
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  _pauseTimer();
+                                },
+                                icon: const Icon(Icons.pause),
+                                label: const Text('Duraklat'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              // Stop button
+                              ElevatedButton.icon(
+                                onPressed: _isLoading ? null : () {
+                                  _stopTimerAndSave();
+                                },
+                                icon: const Icon(Icons.stop),
+                                label: const Text('Durdur'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
+                                  ),
+                                ),
+                              ),
+                            ] else if (_isTimerPaused) ...[
+                              // Resume button
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  _startTimer();
+                                },
+                                icon: const Icon(Icons.play_arrow),
+                                label: const Text('Devam Et'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: themeProvider.primaryColor,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              // Stop button
+                              ElevatedButton.icon(
+                                onPressed: _isLoading ? null : () {
+                                  _stopTimerAndSave();
+                                },
+                                icon: const Icon(Icons.stop),
+                                label: const Text('Durdur'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
               ],
 
               // Notes Field
@@ -485,12 +814,9 @@ class _FeedingTrackingSheetState extends State<FeedingTrackingSheet> {
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              _hasSelectedDateTime
-                                  ? Icons.save
-                                  : Icons.restaurant,
-                              size: 20,
-                            ),
+                            _hasSelectedDateTime
+                                ? Icon(Icons.save, size: 20)
+                                : Text('🍼', style: TextStyle(fontSize: 20)),
                             const SizedBox(width: 8),
                             Text(
                               _hasSelectedDateTime
@@ -517,7 +843,7 @@ class _FeedingTrackingSheetState extends State<FeedingTrackingSheet> {
     );
   }
 
-  Widget _buildTypeButton(String label, IconData icon, FeedingType type) {
+  Widget _buildTypeButton(String label, dynamic icon, FeedingType type) { // IconData or String (emoji)
     final isSelected = _selectedType == type;
 
     return Consumer<ThemeProvider>(
@@ -540,13 +866,18 @@ class _FeedingTrackingSheetState extends State<FeedingTrackingSheet> {
             ),
             child: Column(
               children: [
-                Icon(
-                  icon,
-                  color: isSelected
-                      ? themeProvider.primaryColor
-                      : themeProvider.mutedForegroundColor,
-                  size: 24,
-                ),
+                icon is IconData
+                    ? Icon(
+                        icon,
+                        color: isSelected
+                            ? themeProvider.primaryColor
+                            : themeProvider.mutedForegroundColor,
+                        size: 24,
+                      )
+                    : Text(
+                        icon as String,
+                        style: TextStyle(fontSize: 24),
+                      ),
                 const SizedBox(height: 8),
                 Text(
                   label,
@@ -573,7 +904,16 @@ class _FeedingTrackingSheetState extends State<FeedingTrackingSheet> {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, _) {
         return GestureDetector(
-          onTap: () => setState(() => _selectedSide = side),
+          onTap: () {
+            // If switching sides while timer is running, stop timer
+            if (_isTimerRunning && _selectedSide != null && _selectedSide != side) {
+              _stopTimer();
+            }
+            setState(() {
+              _selectedSide = side;
+              // Don't auto-start timer, just select the side
+            });
+          },
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 16),
             decoration: BoxDecoration(

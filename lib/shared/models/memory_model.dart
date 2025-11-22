@@ -69,11 +69,11 @@ class Memory {
       'title': title,
       'description': description,
       'media_url': mediaUrl,
-      'memory_date': memoryDate.toIso8601String(),
+      'memory_date': memoryDate.toUtc().toIso8601String(),
       'metadata': metadata,
       'is_favorite': isFavorite,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt.toUtc().toIso8601String(),
     };
   }
 

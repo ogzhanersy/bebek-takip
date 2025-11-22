@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class SummaryItem extends StatelessWidget {
-  final IconData icon;
+  final dynamic icon; // IconData or String (emoji)
   final Color iconColor;
   final String label;
   final String value;
@@ -20,7 +20,12 @@ class SummaryItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Icon(icon, color: iconColor, size: 24),
+        icon is IconData
+            ? Icon(icon, color: iconColor, size: 24)
+            : Text(
+                icon as String,
+                style: TextStyle(fontSize: 24),
+              ),
         const SizedBox(height: 8),
         Text(
           label,

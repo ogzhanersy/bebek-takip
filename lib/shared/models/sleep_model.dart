@@ -47,26 +47,36 @@ class Sleep {
     return {
       'id': id,
       'baby_id': babyId,
-      'start_time': startTime.toIso8601String(),
-      'end_time': endTime?.toIso8601String(),
+      'start_time': startTime.toUtc().toIso8601String(),
+      'end_time': endTime?.toUtc().toIso8601String(),
       'notes': notes,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt.toUtc().toIso8601String(),
     };
   }
 
   // JSON deserialization from Supabase
   factory Sleep.fromJson(Map<String, dynamic> json) {
+    // Parse UTC string from Supabase and convert to local time
+    // Supabase stores all times in UTC (ISO8601 with 'Z' suffix)
+    DateTime parseDateTime(String dateTimeStr) {
+      // DateTime.parse() automatically recognizes UTC strings (ending with 'Z')
+      // and creates a UTC DateTime. We convert it to local time.
+      final parsed = DateTime.parse(dateTimeStr);
+      // Always convert to local time - Supabase always stores UTC
+      return parsed.toLocal();
+    }
+    
     return Sleep(
       id: json['id'] as String,
       babyId: json['baby_id'] as String,
-      startTime: DateTime.parse(json['start_time'] as String),
+      startTime: parseDateTime(json['start_time'] as String),
       endTime: json['end_time'] != null 
-          ? DateTime.parse(json['end_time'] as String) 
+          ? parseDateTime(json['end_time'] as String) 
           : null,
       notes: json['notes'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: parseDateTime(json['created_at'] as String),
+      updatedAt: parseDateTime(json['updated_at'] as String),
     );
   }
 

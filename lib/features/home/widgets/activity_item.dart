@@ -6,7 +6,7 @@ import '../../../shared/providers/theme_provider.dart';
 class ActivityItem extends StatelessWidget {
   final String time;
   final String title;
-  final IconData icon;
+  final dynamic icon; // IconData or String (emoji)
   final Color iconColor;
   final DateTime actualTime; // Gerçek saat bilgisi için
 
@@ -35,7 +35,15 @@ class ActivityItem extends StatelessWidget {
                     color: themeProvider.mutedColor.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Icon(icon, color: iconColor, size: 20),
+                  child: Center(
+                    child: icon is IconData
+                        ? Icon(icon, color: iconColor, size: 20)
+                        : Text(
+                            icon as String,
+                            style: TextStyle(fontSize: 20),
+                            textAlign: TextAlign.center,
+                          ),
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -74,6 +82,7 @@ class ActivityItem extends StatelessWidget {
   }
 
   String _formatActualTime() {
+    // actualTime is already in local timezone from fromJson()
     return '${actualTime.hour.toString().padLeft(2, '0')}:${actualTime.minute.toString().padLeft(2, '0')}';
   }
 }

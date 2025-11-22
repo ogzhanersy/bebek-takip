@@ -31,8 +31,9 @@ class HelpSupportScreen extends StatelessWidget {
             ),
             centerTitle: true,
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -51,6 +52,7 @@ class HelpSupportScreen extends StatelessWidget {
                 // Footer
                 _buildFooter(themeProvider),
               ],
+            ),
             ),
           ),
         );
@@ -246,8 +248,8 @@ class HelpSupportScreen extends StatelessWidget {
           _buildContactItem(
             icon: Icons.email,
             label: 'E-posta',
-            value: 'support@babytracker.com',
-            onTap: () => _launchEmail('support@babytracker.com'),
+            value: 'destek@bebektakip.com',
+            onTap: () => _launchEmail('destek@bebektakip.com'),
             themeProvider: themeProvider,
           ),
           // Telefon ve Web Sitesi kaldırıldı

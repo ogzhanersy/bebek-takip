@@ -77,8 +77,8 @@ class PhysicalMeasurementService {
       final response = await SupabaseService.from(tableName)
           .select()
           .eq('baby_id', babyId)
-          .gte('measured_at', startDate.toIso8601String())
-          .lte('measured_at', endDate.toIso8601String())
+          .gte('measured_at', startDate.toUtc().toIso8601String())
+          .lte('measured_at', endDate.toUtc().toIso8601String())
           .order('measured_at', ascending: false);
 
       return (response as List)

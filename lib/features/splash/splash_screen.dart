@@ -15,10 +15,10 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Short delay to show splash, then navigate to main wrapper
+    // Short delay to show splash, then navigate to ad screen
     _timer = Timer(const Duration(milliseconds: 900), () {
       if (!mounted) return;
-      context.go('/');
+      context.go('/ad');
     });
   }
 

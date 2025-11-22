@@ -92,8 +92,8 @@ class SleepService {
     try {
       final response = await SupabaseService.from(tableName)
           .update({
-            'end_time': DateTime.now().toIso8601String(),
-            'updated_at': DateTime.now().toIso8601String(),
+            'end_time': DateTime.now().toUtc().toIso8601String(),
+            'updated_at': DateTime.now().toUtc().toIso8601String(),
           })
           .eq('id', sleepId)
           .select()
@@ -137,8 +137,8 @@ class SleepService {
       final response = await SupabaseService.from(tableName)
           .select()
           .eq('baby_id', babyId)
-          .gte('start_time', startDate.toIso8601String())
-          .lte('start_time', endDate.toIso8601String())
+          .gte('start_time', startDate.toUtc().toIso8601String())
+          .lte('start_time', endDate.toUtc().toIso8601String())
           .order('start_time', ascending: false);
 
       return (response as List).map((json) => Sleep.fromJson(json)).toList();

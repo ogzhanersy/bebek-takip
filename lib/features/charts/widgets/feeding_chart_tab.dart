@@ -187,11 +187,7 @@ class _FeedingChartTabState extends State<FeedingChartTab> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.restaurant_outlined,
-                    size: 64,
-                    color: themeProvider.mutedForegroundColor,
-                  ),
+                  Text('🍼', style: TextStyle(fontSize: 64)),
                   const SizedBox(height: 16),
                   Text(
                     'Beslenme verisi bulunamadı',
@@ -318,7 +314,11 @@ class _FeedingChartTabState extends State<FeedingChartTab> {
         children: [
           Row(
             children: [
-              Icon(Icons.schedule, color: Colors.purple, size: 24),
+              Icon(
+                Icons.schedule,
+                color: const Color(0xFFCE93D8),
+                size: 24,
+              ), // Soft purple
               const SizedBox(width: 8),
               Text(
                 'Günlük Beslenme (Süre)',
@@ -439,7 +439,11 @@ class _FeedingChartTabState extends State<FeedingChartTab> {
         children: [
           Row(
             children: [
-              Icon(Icons.bar_chart, color: Colors.purple, size: 24),
+              Icon(
+                Icons.bar_chart,
+                color: const Color(0xFFCE93D8),
+                size: 24,
+              ), // Soft purple
               const SizedBox(width: 8),
               Text(
                 'Günlük Beslenme Sayısı',
@@ -516,7 +520,7 @@ class _FeedingChartTabState extends State<FeedingChartTab> {
                     barRods: [
                       BarChartRodData(
                         toY: spot.y,
-                        color: Colors.purple,
+                        color: const Color(0xFFCE93D8), // Soft purple
                         width: 12,
                         borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(4),
@@ -547,7 +551,7 @@ class _FeedingChartTabState extends State<FeedingChartTab> {
         barRods: [
           BarChartRodData(
             toY: entry.value,
-            color: Colors.purple,
+            color: const Color(0xFFCE93D8), // Soft purple
             width: 16,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
           ),
@@ -565,7 +569,11 @@ class _FeedingChartTabState extends State<FeedingChartTab> {
         children: [
           Row(
             children: [
-              Icon(Icons.bar_chart, color: Colors.purple, size: 24),
+              Icon(
+                Icons.bar_chart,
+                color: const Color(0xFFCE93D8),
+                size: 24,
+              ), // Soft purple
               const SizedBox(width: 8),
               Text(
                 '5 Günlük Beslenme Sayısı',
@@ -654,21 +662,21 @@ class _FeedingChartTabState extends State<FeedingChartTab> {
         value: typeCounts[FeedingType.breastfeeding]?.toDouble() ?? 0,
         title:
             'Emzirme\n${((typeCounts[FeedingType.breastfeeding] ?? 0) / total * 100).toStringAsFixed(0)}%',
-        color: Colors.pink,
+        color: const Color(0xFFF48FB1), // Soft pink
         radius: 80,
       ),
       PieChartSectionData(
         value: typeCounts[FeedingType.bottle]?.toDouble() ?? 0,
         title:
             'Biberon\n${((typeCounts[FeedingType.bottle] ?? 0) / total * 100).toStringAsFixed(0)}%',
-        color: Colors.blue,
+        color: const Color(0xFF90CAF9), // Soft blue
         radius: 80,
       ),
       PieChartSectionData(
         value: typeCounts[FeedingType.solid]?.toDouble() ?? 0,
         title:
             'Katı Gıda\n${((typeCounts[FeedingType.solid] ?? 0) / total * 100).toStringAsFixed(0)}%',
-        color: Colors.orange,
+        color: const Color(0xFFFFB74D), // Soft orange
         radius: 80,
       ),
     ].where((s) => s.value > 0).toList();
@@ -680,7 +688,11 @@ class _FeedingChartTabState extends State<FeedingChartTab> {
         children: [
           Row(
             children: [
-              Icon(Icons.pie_chart, color: Colors.pink, size: 24),
+              Icon(
+                Icons.pie_chart,
+                color: const Color(0xFFF48FB1),
+                size: 24,
+              ), // Soft pink
               const SizedBox(width: 8),
               Text(
                 'Beslenme Tipi Dağılımı',
@@ -713,20 +725,25 @@ class _FeedingChartTabState extends State<FeedingChartTab> {
     ThemeProvider themeProvider,
   ) {
     final totalFeedings = _feedings.length;
-    // Gün sayısı: seçilen aralık için
-    final now = DateTime.now();
-    final startDate = () {
-      switch (widget.timeRange) {
-        case TimeRange.daily:
-          return DateTime(now.year, now.month, now.day);
-        case TimeRange.weekly:
-          return now.subtract(const Duration(days: 6));
-        case TimeRange.monthly:
-          return now.subtract(const Duration(days: 29));
-      }
-    }();
-    final dayCount = now.difference(startDate).inDays + 1;
-    final avgPerDay = dayCount > 0 ? totalFeedings / dayCount : 0.0;
+
+    // Calculate average only for weekly and monthly views
+    double? avgPerDay;
+    if (widget.timeRange != TimeRange.daily) {
+      final now = DateTime.now();
+      final startDate = () {
+        switch (widget.timeRange) {
+          case TimeRange.daily:
+            return DateTime(now.year, now.month, now.day);
+          case TimeRange.weekly:
+            return now.subtract(const Duration(days: 6));
+          case TimeRange.monthly:
+            return now.subtract(const Duration(days: 29));
+        }
+      }();
+      final dayCount = now.difference(startDate).inDays + 1;
+      avgPerDay = dayCount > 0 ? totalFeedings / dayCount : 0.0;
+    }
+
     final bottleFeedings = _feedings
         .where((f) => f.type == FeedingType.bottle)
         .toList();
@@ -753,16 +770,18 @@ class _FeedingChartTabState extends State<FeedingChartTab> {
             themeProvider,
             'Toplam Beslenme',
             '$totalFeedings',
-            Icons.restaurant,
+            '🍼',
           ),
-          const SizedBox(height: 12),
-          _buildStatItem(
-            context,
-            themeProvider,
-            'Ortalama (Günlük)',
-            avgPerDay.toStringAsFixed(1),
-            Icons.trending_up,
-          ),
+          if (avgPerDay != null) ...[
+            const SizedBox(height: 12),
+            _buildStatItem(
+              context,
+              themeProvider,
+              'Ortalama (Günlük)',
+              avgPerDay.toStringAsFixed(1),
+              Icons.trending_up,
+            ),
+          ],
           if (totalMilk > 0) ...[
             const SizedBox(height: 12),
             _buildStatItem(
@@ -770,7 +789,7 @@ class _FeedingChartTabState extends State<FeedingChartTab> {
               themeProvider,
               'Toplam Süt Miktarı',
               '$totalMilk ml',
-              Icons.local_drink,
+              '🍼',
             ),
           ],
         ],
@@ -783,11 +802,13 @@ class _FeedingChartTabState extends State<FeedingChartTab> {
     ThemeProvider themeProvider,
     String label,
     String value,
-    IconData icon,
+    dynamic icon, // IconData or String (emoji)
   ) {
     return Row(
       children: [
-        Icon(icon, color: themeProvider.primaryColor, size: 20),
+        icon is IconData
+            ? Icon(icon, color: themeProvider.primaryColor, size: 20)
+            : Text(icon as String, style: TextStyle(fontSize: 20)),
         const SizedBox(width: 12),
         Expanded(
           child: Text(

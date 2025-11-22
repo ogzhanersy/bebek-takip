@@ -40,14 +40,24 @@ class Diaper {
       'id': id,
       'baby_id': babyId,
       'type': type.toString().split('.').last,
-      'time': time.toIso8601String(),
+      'time': time.toUtc().toIso8601String(),
       'notes': notes,
-      'created_at': DateTime.now().toIso8601String(),
-      'updated_at': DateTime.now().toIso8601String(),
+      'created_at': DateTime.now().toUtc().toIso8601String(),
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
     };
   }
 
   factory Diaper.fromJson(Map<String, dynamic> json) {
+    // Parse UTC string from Supabase and convert to local time
+    // Supabase stores all times in UTC (ISO8601 with 'Z' suffix)
+    DateTime parseDateTime(String dateTimeStr) {
+      // DateTime.parse() automatically recognizes UTC strings (ending with 'Z')
+      // and creates a UTC DateTime. We convert it to local time.
+      final parsed = DateTime.parse(dateTimeStr);
+      // Always convert to local time - Supabase always stores UTC
+      return parsed.toLocal();
+    }
+    
     return Diaper(
       id: json['id'] as String,
       babyId: json['baby_id'] as String,
@@ -55,7 +65,7 @@ class Diaper {
         (e) => e.toString().split('.').last == json['type'],
         orElse: () => DiaperType.wet,
       ),
-      time: DateTime.parse(json['time'] as String),
+      time: parseDateTime(json['time'] as String),
       notes: json['notes'] as String?,
     );
   }
